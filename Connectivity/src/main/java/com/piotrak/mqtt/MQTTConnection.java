@@ -6,13 +6,15 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 
 public class MQTTConnection implements IConnection {
     
-    private String HOST = "0.0.0.0";
-    private String PORT = "0";
-    private String PROTOCOL = "tcp";
+    private String host;
+    private String port;
+    private String protocol;
     
     @Override
     public void config(HierarchicalConfiguration config) {
-    
+        host = config.getString("host") == null ? "0.0.0.0" : config.getString("host");
+        port = config.getString("port") == null ? "0" : config.getString("port");
+        protocol = config.getString("protocol") == null ? "tcp" : config.getString("protocol");
     }
     
     @Override
@@ -38,5 +40,17 @@ public class MQTTConnection implements IConnection {
     @Override
     public ICommand getCommand() {
         return null;
+    }
+    
+    public String getHost() {
+        return host;
+    }
+    
+    public String getPort() {
+        return port;
+    }
+    
+    public String getProtocol() {
+        return protocol;
     }
 }
