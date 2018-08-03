@@ -7,8 +7,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "connection")
 public interface IConnection {
     
-    String SEPARATOR = "://";
-    
     void config(HierarchicalConfiguration config);
     
     void connect();
@@ -19,5 +17,5 @@ public interface IConnection {
     
     void sendCommand(ICommand command);
     
-    ICommand getCommand();
+    void listenForCommand();
 }

@@ -25,7 +25,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.piotrak.SmartJava</mainClass>
+                            <mainClass>com.piotrak.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -49,6 +49,7 @@
         <module>TechnologyTest</module>
         <module>Connectivity</module>
         <module>SmartHomeApp</module>
+        <module>Modules</module>
     </modules>
 
     <repositories>
@@ -77,6 +78,14 @@
             <version>RELEASE</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/log4j/log4j -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
     </dependencies>
 
 </project>

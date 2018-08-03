@@ -3,6 +3,7 @@ package com.piotrak;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +12,20 @@ public class Main {
     
     public static final String CONFIG_FILE = "config.xml";
     
+    public static final Logger LOGGER = Logger.getLogger(Main.class);
+    
     public static void main(String[] args) {
         Main main = new Main();
         try {
             XMLConfiguration config = new XMLConfiguration(CONFIG_FILE);
             List<IConnection> connections = main.setUpConnections(config);
+            for (IConnection connection : connections) {
+                connection.connect();
+                connection.listenForCommand();
+            }
             
         } catch (ConfigurationException e) {
-            System.out.println("Problem occurred while reading the config file: " + CONFIG_FILE + "\n" + e.getMessage());
-            e.printStackTrace();
+            LOGGER.error("Problem occurred while reading the config file: " + CONFIG_FILE + "\n", e);
         }
     }
     
