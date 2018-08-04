@@ -2,10 +2,21 @@
 <config>
     <connections>
         <connection id="mqtt">
-            <classname>com.piotrak.mqtt.MQTTConnection</classname>
+            <classname>com.piotrak.connectivity.mqtt.MQTTConnection</classname>
             <host>192.168.1.103</host>
             <port>1883</port>
             <protocol>tcp</protocol>
         </connection>
     </connections>
+    <modules>
+        <module>
+            <classname>com.piotrak.modularity.modules.SwitchModule</classname>
+            <name>Monitor</name>
+            <icon>monitor</icon>
+            <connection>
+                <topic-subscribe>czuj</topic-subscribe>
+                <topic-publish>czuj</topic-publish>
+            </connection>
+        </module>
+    </modules>
 </config>

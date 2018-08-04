@@ -47,9 +47,8 @@
 
     <modules>
         <module>TechnologyTest</module>
-        <module>Connectivity</module>
+        <module>Services</module>
         <module>SmartHomeApp</module>
-        <module>Modules</module>
     </modules>
 
     <repositories>

@@ -1,14 +1,15 @@
-package com.piotrak.mqtt;
+package com.piotrak.connectivity.mqtt;
 
-import com.piotrak.ICommand;
-import com.piotrak.IConnection;
+import com.piotrak.connectivity.ICommand;
+import com.piotrak.connectivity.IConnection;
+import com.piotrak.modularity.Module;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -21,14 +22,15 @@ public class MQTTConnection implements IConnection {
     private static final Logger LOGGER = Logger.getLogger(MQTTConnection.class);
     private MqttClient mqttClient;
     private String uri = "";
-    private List<String> topics = new ArrayList<>(0);
+    private Map<String, Module> topicsMap = new HashMap<>(0);
     
     @Override
-    public void config(HierarchicalConfiguration config) {
+    public void config(HierarchicalConfiguration config, Map<String, Module> topicsMap) {
         host = config.getString("host") == null ? "0.0.0.0" : config.getString("host");
         port = config.getString("port") == null ? "0" : config.getString("port");
         protocol = config.getString("protocol") == null ? "tcp" : config.getString("protocol");
         uri = protocol + SEPARATOR + host + ":" + port;
+        this.topicsMap = topicsMap;
     }
     
     @Override
@@ -76,7 +78,7 @@ public class MQTTConnection implements IConnection {
     @Override
     public void listenForCommand() {
         if (mqttClient != null) {
-            for (String topic : topics) {
+            for (String topic : getTopicsMap().keySet()) {
                 try {
                     mqttClient.subscribe(topic);
                 } catch (MqttException e) {
@@ -99,7 +101,9 @@ public class MQTTConnection implements IConnection {
                     String message = new String(mqttMessage.getPayload());
                     LOGGER.debug("Message received in topic " + s + ": " + message);
                     System.out.println("Message received in topic " + s + ": " + message);
+//                  sprawdz topiki i wywolaj metode useRules
                     MQTTCommand command = new MQTTCommand(s, message);
+                    useRules(command);
                 }
                 
                 @Override
@@ -107,6 +111,14 @@ public class MQTTConnection implements IConnection {
                     LOGGER.info("Message successfully sent");
                 }
             });
+        }
+    }
+    
+    private void useRules(MQTTCommand command) {
+        for (String topic : getTopicsMap().keySet()) {
+            if (topic.equals(command.getTopic())) {
+            
+            }
         }
     }
     
@@ -126,4 +138,7 @@ public class MQTTConnection implements IConnection {
         return mqttClient;
     }
     
+    public Map<String, Module> getTopicsMap() {
+        return topicsMap;
+    }
 }

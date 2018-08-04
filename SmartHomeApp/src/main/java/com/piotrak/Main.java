@@ -1,5 +1,6 @@
 package com.piotrak;
 
+import com.piotrak.connectivity.IConnection;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -18,6 +19,9 @@ public class Main {
         Main main = new Main();
         try {
             XMLConfiguration config = new XMLConfiguration(CONFIG_FILE);
+//            loadConfig()
+//            tworz moduły
+//            tworz rule
             List<IConnection> connections = main.setUpConnections(config);
             for (IConnection connection : connections) {
                 connection.connect();
@@ -37,7 +41,7 @@ public class Main {
             String className = connectionConfig.getString("classname");
             try {
                 connection = (IConnection) Class.forName(className).newInstance();
-                connection.config(connectionConfig);
+                connection.config(connectionConfig, null);
                 connections.add(connection);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
