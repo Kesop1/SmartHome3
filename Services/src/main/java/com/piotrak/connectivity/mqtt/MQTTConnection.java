@@ -1,17 +1,17 @@
 package com.piotrak.connectivity.mqtt;
 
+import com.piotrak.Constants;
 import com.piotrak.connectivity.ICommand;
 import com.piotrak.connectivity.IConnection;
-import com.piotrak.modularity.Module;
+import com.piotrak.modularity.modules.Module;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class MQTTConnection implements IConnection {
     
@@ -25,12 +25,12 @@ public class MQTTConnection implements IConnection {
     private Map<String, Module> topicsMap = new HashMap<>(0);
     
     @Override
-    public void config(HierarchicalConfiguration config, Map<String, Module> topicsMap) {
+    public void config(HierarchicalConfiguration config, List<Module> moduleList) {
         host = config.getString("host") == null ? "0.0.0.0" : config.getString("host");
         port = config.getString("port") == null ? "0" : config.getString("port");
         protocol = config.getString("protocol") == null ? "tcp" : config.getString("protocol");
         uri = protocol + SEPARATOR + host + ":" + port;
-        this.topicsMap = topicsMap;
+        topicsMap = loadTopics(moduleList);
     }
     
     @Override
@@ -39,6 +39,7 @@ public class MQTTConnection implements IConnection {
             mqttClient = new MqttClient(uri, MqttClient.generateClientId(), new MemoryPersistence());
             setCallback();
             mqttClient.connect();
+            listenForCommand();
         } catch (MqttException e) {
             LOGGER.error("Exception occurred while establishing MQTTConnection", e);
         }
@@ -67,8 +68,9 @@ public class MQTTConnection implements IConnection {
     public void sendCommand(ICommand command) {
         if (command instanceof MQTTCommand) {
             MQTTCommand mqttCommand = (MQTTCommand) command;
+            MqttTopic mqttTopic = mqttClient.getTopic((mqttCommand).getTopic());
             try {
-                mqttClient.publish(mqttCommand.getTopic(), mqttCommand.getMessage().getBytes(UTF_8), 2, false);
+                mqttTopic.publish(new MqttMessage(mqttCommand.getMessage().getBytes()));
             } catch (MqttException e) {
                 LOGGER.error("Error occurred while publishing MQTT command", e);
             }
@@ -99,9 +101,7 @@ public class MQTTConnection implements IConnection {
                 @Override
                 public void messageArrived(String s, MqttMessage mqttMessage) {
                     String message = new String(mqttMessage.getPayload());
-                    LOGGER.debug("Message received in topic " + s + ": " + message);
-                    System.out.println("Message received in topic " + s + ": " + message);
-//                  sprawdz topiki i wywolaj metode useRules
+                    LOGGER.info("Message received in topic " + s + ": " + message);
                     MQTTCommand command = new MQTTCommand(s, message);
                     useRules(command);
                 }
@@ -117,9 +117,18 @@ public class MQTTConnection implements IConnection {
     private void useRules(MQTTCommand command) {
         for (String topic : getTopicsMap().keySet()) {
             if (topic.equals(command.getTopic())) {
-            
+                Module module = getTopicsMap().get(topic);
+                module.getRules().useRules(command, module, this);
             }
         }
+    }
+    
+    private Map<String, Module> loadTopics(List<Module> moduleList) {
+        Map<String, Module> topics = new HashMap<>(0);
+        for (Module module : moduleList) {
+            topics.put(module.getCommunication().getCommunication().get(Constants.MQTT_TOPIC_SUBSCRIBE), module);
+        }
+        return topics;
     }
     
     public String getHost() {
@@ -132,10 +141,6 @@ public class MQTTConnection implements IConnection {
     
     public String getProtocol() {
         return protocol;
-    }
-    
-    public MqttClient getMqttClient() {
-        return mqttClient;
     }
     
     public Map<String, Module> getTopicsMap() {

@@ -8,14 +8,16 @@
             <protocol>tcp</protocol>
         </connection>
     </connections>
+
     <modules>
         <module>
             <classname>com.piotrak.modularity.modules.SwitchModule</classname>
             <name>Monitor</name>
             <icon>monitor</icon>
             <connection>
+                <type>MQTT</type>
                 <topic-subscribe>czuj</topic-subscribe>
-                <topic-publish>czuj</topic-publish>
+                <topic-publish>czuj/java</topic-publish>
             </connection>
         </module>
     </modules>
