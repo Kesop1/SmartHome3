@@ -14,4 +14,7 @@ public class Constants {
     
     public static final String OFF = "OFF";
     
+    private Constants() {
+        //do not instantiate constants class
+    }
 }

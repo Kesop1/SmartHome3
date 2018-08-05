@@ -22,7 +22,7 @@ public class MQTTConnection implements IConnection {
     private static final Logger LOGGER = Logger.getLogger(MQTTConnection.class);
     private MqttClient mqttClient;
     private String uri = "";
-    private Map<String, Module> topicsMap = new HashMap<>(0);
+    private Map<String, Module> topicsMap;
     
     @Override
     public void config(HierarchicalConfiguration config, List<Module> moduleList) {
@@ -68,7 +68,7 @@ public class MQTTConnection implements IConnection {
     public void sendCommand(ICommand command) {
         if (command instanceof MQTTCommand) {
             MQTTCommand mqttCommand = (MQTTCommand) command;
-            MqttTopic mqttTopic = mqttClient.getTopic((mqttCommand).getTopic());
+            MqttTopic mqttTopic = mqttClient.getTopic(mqttCommand.getTopic());
             try {
                 mqttTopic.publish(new MqttMessage(mqttCommand.getMessage().getBytes()));
             } catch (MqttException e) {
@@ -79,7 +79,7 @@ public class MQTTConnection implements IConnection {
     
     @Override
     public void listenForCommand() {
-        if (mqttClient != null) {
+        if (isConnected()) {
             for (String topic : getTopicsMap().keySet()) {
                 try {
                     mqttClient.subscribe(topic);
@@ -93,6 +93,7 @@ public class MQTTConnection implements IConnection {
     private void setCallback() {
         if (mqttClient != null) {
             mqttClient.setCallback(new MqttCallback() {
+    
                 @Override
                 public void connectionLost(Throwable throwable) {
                     LOGGER.error("MQTTClient got disconnected");
@@ -125,8 +126,12 @@ public class MQTTConnection implements IConnection {
     
     private Map<String, Module> loadTopics(List<Module> moduleList) {
         Map<String, Module> topics = new HashMap<>(0);
-        for (Module module : moduleList) {
-            topics.put(module.getCommunication().getCommunication().get(Constants.MQTT_TOPIC_SUBSCRIBE), module);
+        if (moduleList != null) {
+            for (Module module : moduleList) {
+                topics.put(module.getCommunication().getCommunication().get(Constants.MQTT_TOPIC_SUBSCRIBE), module);
+            }
+        } else {
+            LOGGER.warn("Modules list is empty, unable to load topics");
         }
         return topics;
     }
