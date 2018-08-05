@@ -64,4 +64,12 @@ public class SmartHomeApp {
         }
         return connections;
     }
+    
+    public List<Module> getModules() {
+        return modules;
+    }
+    
+    public List<IConnection> getConnections() {
+        return connections;
+    }
 }

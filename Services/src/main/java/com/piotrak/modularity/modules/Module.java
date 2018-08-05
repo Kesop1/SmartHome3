@@ -62,7 +62,7 @@ public abstract class Module {
         HierarchicalConfiguration connectionsList = config.configurationAt("connection");
         if (Constants.MQTT.equals(connectionType)) {
             communication = new MQTTCommunication();
-            communication.setCommunication(connectionsList);
+            communication.setCommunicationMap(connectionsList);
         } else {
             LOGGER.warn("Unable to assign a communication type " + connectionType);
         }

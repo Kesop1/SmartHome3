@@ -6,8 +6,8 @@ import java.util.Map;
 
 public interface ICommunication {
     
-    Map<String, String> getCommunication();
+    Map<String, String> getCommunicationMap();
     
-    void setCommunication(HierarchicalConfiguration communication);
+    void setCommunicationMap(HierarchicalConfiguration communication);
     
 }

@@ -9,16 +9,16 @@ import java.util.Map;
 
 public class MQTTCommunication implements ICommunication {
     
-    private Map<String, String> communication = new HashMap<>(0);
+    private Map<String, String> communicationMap = new HashMap<>(0);
     
     @Override
-    public Map<String, String> getCommunication() {
-        return communication;
+    public Map<String, String> getCommunicationMap() {
+        return communicationMap;
     }
     
     @Override
-    public void setCommunication(HierarchicalConfiguration config) {
-        communication.put(Constants.MQTT_TOPIC_SUBSCRIBE, config.getString(Constants.MQTT_TOPIC_SUBSCRIBE));
-        communication.put(Constants.MQTT_TOPIC_PUBLISH, config.getString(Constants.MQTT_TOPIC_PUBLISH));
+    public void setCommunicationMap(HierarchicalConfiguration config) {
+        communicationMap.put(Constants.MQTT_TOPIC_SUBSCRIBE, config.getString(Constants.MQTT_TOPIC_SUBSCRIBE));
+        communicationMap.put(Constants.MQTT_TOPIC_PUBLISH, config.getString(Constants.MQTT_TOPIC_PUBLISH));
     }
 }

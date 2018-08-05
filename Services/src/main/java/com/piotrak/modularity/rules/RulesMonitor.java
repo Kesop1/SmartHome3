@@ -19,7 +19,7 @@ public class RulesMonitor implements IRules {
     
     private void rule1(MQTTCommand command, Module module, IConnection connection) {
         if (Constants.ON.equals(command.getMessage())) {
-            MQTTCommand mqttCommand = new MQTTCommand(module.getCommunication().getCommunication().get(Constants.MQTT_TOPIC_PUBLISH), "DZIALA");
+            MQTTCommand mqttCommand = new MQTTCommand(module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH), "DZIALA");
             connection.sendCommand(mqttCommand);
         }
     }

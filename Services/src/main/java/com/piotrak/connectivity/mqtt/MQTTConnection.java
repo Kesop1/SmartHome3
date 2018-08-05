@@ -128,7 +128,7 @@ public class MQTTConnection implements IConnection {
         Map<String, Module> topics = new HashMap<>(0);
         if (moduleList != null) {
             for (Module module : moduleList) {
-                topics.put(module.getCommunication().getCommunication().get(Constants.MQTT_TOPIC_SUBSCRIBE), module);
+                topics.put(module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE), module);
             }
         } else {
             LOGGER.warn("Modules list is empty, unable to load topics");
