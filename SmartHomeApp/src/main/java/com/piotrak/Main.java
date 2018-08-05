@@ -1,6 +1,12 @@
 package com.piotrak;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.log4j.Logger;
+
 public class Main {
+    
+    public static final Logger LOGGER = Logger.getLogger(Main.class);
     
     public static final String CONFIG_FILE = "config.xml";
     
@@ -14,7 +20,13 @@ public class Main {
                 }
             }
         }
-        app.loadConfig(config);
-        app.connect();
+        try {
+            XMLConfiguration configFile = new XMLConfiguration(config);
+            app.loadConfig(configFile);
+            app.connect();
+        } catch (ConfigurationException e) {
+            LOGGER.error("Problem occurred while reading the config file: " + config + "\n", e);
+        }
+    
     }
 }

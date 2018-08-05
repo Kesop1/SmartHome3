@@ -2,7 +2,6 @@ package com.piotrak;
 
 import com.piotrak.connectivity.IConnection;
 import com.piotrak.modularity.modules.Module;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.Logger;
@@ -18,15 +17,9 @@ public class SmartHomeApp {
     
     private List<IConnection> connections = new ArrayList<>(1);
     
-    public void loadConfig(String configFilePatk) {
-        try {
-            XMLConfiguration config = new XMLConfiguration(configFilePatk);
-            loadModules(config);
-            loadConnections(config);
-            
-        } catch (ConfigurationException e) {
-            LOGGER.error("Problem occurred while reading the config file: " + configFilePatk + "\n", e);
-        }
+    public void loadConfig(XMLConfiguration config) {
+        loadModules(config);
+        loadConnections(config);
     }
     
     public void connect() {
