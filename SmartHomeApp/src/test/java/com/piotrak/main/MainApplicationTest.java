@@ -70,7 +70,7 @@ public class MainApplicationTest {
         props.put("conType", "MQTT");
         props.put("conSub", "czuj");
         props.put("conPub", "czuj/test");
-        addModule(configuration, props);
+        addModule(configuration, props, 1);
         app.loadConfig(configuration);
         
         //        test module
@@ -126,7 +126,7 @@ public class MainApplicationTest {
         props.put("conType", "MQTT");
         props.put("conSub", "czuj2");
         props.put("conPub", "czuj2/test");
-        addModule(configuration, props);
+        addModule(configuration, props, 1);
         app.loadConfig(configuration);
         
         //        test module
@@ -172,13 +172,13 @@ public class MainApplicationTest {
         assertFalse(connection.isConnected());
     }
     
-    private void addModule(XMLConfiguration configuration, Map<String, String> props) {
-        configuration.addProperty("modules.module(1).classname", props.get("classname"));
-        configuration.addProperty("modules.module(1).name", props.get("name"));
-        configuration.addProperty("modules.module(1).icon", props.get("icon"));
-        configuration.addProperty("modules.module(1).connection.type", props.get("conType"));
-        configuration.addProperty("modules.module(1).connection.topic-subscribe", props.get("conSub"));
-        configuration.addProperty("modules.module(1).connection.topic-publish", props.get("conPub"));
+    private void addModule(XMLConfiguration configuration, Map<String, String> props, int pos) {
+        configuration.addProperty("modules.module(" + pos + ").classname", props.get("classname"));
+        configuration.addProperty("modules.module(" + pos + ").name", props.get("name"));
+        configuration.addProperty("modules.module(" + pos + ").icon", props.get("icon"));
+        configuration.addProperty("modules.module(" + pos + ").connection.type", props.get("conType"));
+        configuration.addProperty("modules.module(" + pos + ").connection.topic-subscribe", props.get("conSub"));
+        configuration.addProperty("modules.module(" + pos + ").connection.topic-publish", props.get("conPub"));
         
     }
 }
