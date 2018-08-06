@@ -29,8 +29,8 @@ public class SmartHomeApp {
     }
     
     private void loadModules(XMLConfiguration config) {
-        List<HierarchicalConfiguration> modulesListConfig = config.configurationsAt("modules.module");
-        for (HierarchicalConfiguration moduleConfig : modulesListConfig) {
+        List<HierarchicalConfiguration> moduleConfigList = config.configurationsAt("modules.module");
+        for (HierarchicalConfiguration moduleConfig : moduleConfigList) {
             String className = moduleConfig.getString("classname");
             try {
                 Module module = (Module) Class.forName(className).newInstance();
