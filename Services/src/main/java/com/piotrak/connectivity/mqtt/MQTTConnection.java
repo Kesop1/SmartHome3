@@ -117,12 +117,11 @@ public class MQTTConnection implements IConnection {
     }
     
     private void useRules(MQTTCommand command) {
-        for (String topic : topicsMap.keySet()) {
+        for (Map.Entry<String, List<Module>> pair : topicsMap.entrySet()) {
+            String topic = pair.getKey();
             if (topic.equals(command.getTopic())) {
-                List<Module> modules = topicsMap.get(topic);
-                for (Module module : modules) {
-                    module.getRules().useRules(command, module, this);
-                }
+                List<Module> modules = pair.getValue();
+                modules.forEach(module -> module.getRules().useRules(command, module, this));
             }
         }
     }
@@ -153,6 +152,18 @@ public class MQTTConnection implements IConnection {
     
     public String getProtocol() {
         return protocol;
+    }
+    
+    
+    public Map<String, List<Module>> getTopicsMap() {
+        Map<String, List<Module>> topicsMapCopy = new HashMap<>(topicsMap.size());
+        for (Map.Entry<String, List<Module>> pair : topicsMap.entrySet()) {
+            String topic = pair.getKey();
+            List<Module> modulesList = new ArrayList<>(topicsMap.get(topic).size());
+            modulesList.addAll(pair.getValue());
+            topicsMapCopy.put(topic, modulesList);
+        }
+        return topicsMapCopy;
     }
     
 }
