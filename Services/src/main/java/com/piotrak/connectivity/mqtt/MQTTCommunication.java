@@ -13,7 +13,7 @@ public class MQTTCommunication implements ICommunication {
     
     @Override
     public Map<String, String> getCommunicationMap() {
-        return communicationMap;
+        return new HashMap<>(communicationMap);
     }
     
     @Override

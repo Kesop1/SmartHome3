@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class MQTTConnection implements IConnection {
     private static final Logger LOGGER = Logger.getLogger(MQTTConnection.class);
     private MqttClient mqttClient;
     private String uri = "";
-    private Map<String, Module> topicsMap;
+    private Map<String, List<Module>> topicsMap;
     
     @Override
     public void config(HierarchicalConfiguration config, List<Module> moduleList) {
@@ -80,7 +81,7 @@ public class MQTTConnection implements IConnection {
     @Override
     public void listenForCommand() {
         if (isConnected()) {
-            for (String topic : getTopicsMap().keySet()) {
+            for (String topic : topicsMap.keySet()) {
                 try {
                     mqttClient.subscribe(topic);
                 } catch (MqttException e) {
@@ -116,19 +117,25 @@ public class MQTTConnection implements IConnection {
     }
     
     private void useRules(MQTTCommand command) {
-        for (String topic : getTopicsMap().keySet()) {
+        for (String topic : topicsMap.keySet()) {
             if (topic.equals(command.getTopic())) {
-                Module module = getTopicsMap().get(topic);
-                module.getRules().useRules(command, module, this);
+                List<Module> modules = topicsMap.get(topic);
+                for (Module module : modules) {
+                    module.getRules().useRules(command, module, this);
+                }
             }
         }
     }
     
-    private Map<String, Module> loadTopics(List<Module> moduleList) {
-        Map<String, Module> topics = new HashMap<>(0);
+    private Map<String, List<Module>> loadTopics(List<Module> moduleList) {
+        Map<String, List<Module>> topics = new HashMap<>(0);
         if (moduleList != null) {
             for (Module module : moduleList) {
-                topics.put(module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE), module);
+                String topic = module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE);
+                if (!topics.containsKey(topic)) {
+                    topics.put(topic, new ArrayList<>(1));
+                }
+                topics.get(topic).add(module);
             }
         } else {
             LOGGER.warn("Modules list is empty, unable to load topics");
@@ -148,7 +155,4 @@ public class MQTTConnection implements IConnection {
         return protocol;
     }
     
-    public Map<String, Module> getTopicsMap() {
-        return topicsMap;
-    }
 }
