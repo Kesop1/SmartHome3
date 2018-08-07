@@ -14,6 +14,8 @@ public abstract class Module {
     
     private String name;
     
+    private String displayName;
+    
     private String icon;
     
     private IRules rules;
@@ -22,6 +24,7 @@ public abstract class Module {
     
     public void config(HierarchicalConfiguration config) {
         name = config.getString("name") == null ? "" : config.getString("name");
+        displayName = config.getString("displayname") == null ? name : config.getString("displayname");
         icon = config.getString("icon") == null ? "" : config.getString("icon");
         setRules();
         setCommunication(config);
@@ -43,6 +46,10 @@ public abstract class Module {
     
     public String getName() {
         return name;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
     }
     
     public String getIcon() {
