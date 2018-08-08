@@ -28,6 +28,7 @@ public class MainApplicationTest {
     public void outsideConfigFileTest() {
         Main.main(new String[]{"-C", "config.xml"});
     }
+    //TODO: dodac test parsowania visibility
     
     @Test
     public void oneMQTTModuleTest() throws ConfigurationException {

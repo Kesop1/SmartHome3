@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--TODO: zrobić XSD
+-->
 <config>
     <connections>
         <connection>
@@ -19,6 +21,9 @@
                 <topic-subscribe>czuj</topic-subscribe>
                 <topic-publish>czuj/java</topic-publish>
             </connection>
+            <visibility>
+                <screen name="Main" posX="0" posY="0"/>
+            </visibility>
         </module>
         <module>
             <classname>com.piotrak.impl.modularity.modules.SwitchModule</classname>
@@ -30,6 +35,9 @@
                 <topic-subscribe>czuj</topic-subscribe>
                 <topic-publish>czuj/java</topic-publish>
             </connection>
+            <visibility>
+                <screen name="Main" posX="0" posY="1"/>
+            </visibility>
         </module>
     </modules>
 </config>

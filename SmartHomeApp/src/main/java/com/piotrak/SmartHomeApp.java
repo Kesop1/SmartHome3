@@ -18,10 +18,12 @@ public class SmartHomeApp {
     
     public static final Logger LOGGER = Logger.getLogger(SmartHomeApp.class);
     
+    public static final String CONFIG_MODULE = "modules.module";
+    
+    private static final String CONFIG_CONNECTION = "connections.connection";
+    
     private List<Module> modules = new ArrayList<>(1);
     
-    public static final String CONFIG_MODULE = "modules.module";
-    private static final String CONFIG_CONNECTION = "connections.connection";
     private Map<String, IConnectionService> connectionServiceList = new HashMap<>(1);
     
     public void loadConfig(XMLConfiguration config) {

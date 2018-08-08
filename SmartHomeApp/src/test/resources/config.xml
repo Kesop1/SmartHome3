@@ -19,6 +19,9 @@
                 <topic-subscribe>czuj</topic-subscribe>
                 <topic-publish>czuj/test</topic-publish>
             </connection>
+            <visibility>
+                <screen name="Main" posX="0" posY="0"/>
+            </visibility>
         </module>
     </modules>
 </config>
