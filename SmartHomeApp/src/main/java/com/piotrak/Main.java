@@ -24,6 +24,7 @@ public class Main {
             XMLConfiguration configFile = new XMLConfiguration(config);
             app.loadConfig(configFile);
             app.connect();
+            VisibilityApp.main(args, app.getModules(), app.getConnectionServiceList());
         } catch (ConfigurationException e) {
             LOGGER.error("Problem occurred while reading the config file: " + config + "\n", e);
         }
