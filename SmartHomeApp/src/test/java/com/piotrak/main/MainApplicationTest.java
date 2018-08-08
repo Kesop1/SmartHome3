@@ -3,16 +3,19 @@ package com.piotrak.main;
 import com.piotrak.Constants;
 import com.piotrak.Main;
 import com.piotrak.SmartHomeApp;
-import com.piotrak.connectivity.mqtt.MQTTCommunication;
-import com.piotrak.connectivity.mqtt.MQTTConnection;
-import com.piotrak.modularity.modules.SwitchModule;
-import com.piotrak.modularity.rules.IRules;
-import com.piotrak.modularity.rules.RulesMonitor;
+import com.piotrak.contract.modularity.modules.Module;
+import com.piotrak.impl.connectivity.mqtt.MQTTCommunication;
+import com.piotrak.impl.connectivity.mqtt.MQTTConnection;
+import com.piotrak.impl.connectivity.mqtt.MQTTConnectionService;
+import com.piotrak.impl.modularity.modules.SwitchModule;
+import com.piotrak.impl.modularity.rules.RulesGlosniki;
+import com.piotrak.impl.modularity.rules.RulesMonitor;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,6 +40,7 @@ public class MainApplicationTest {
         assertTrue(app.getModules().get(0) instanceof SwitchModule);
         SwitchModule module = (SwitchModule) app.getModules().get(0);
         assertEquals("Monitor", module.getName());
+        assertEquals("Monitor", module.getDisplayName());
         assertEquals("monitor", module.getIcon());
 
 //        test communication
@@ -44,18 +48,31 @@ public class MainApplicationTest {
         MQTTCommunication communication = (MQTTCommunication) module.getCommunication();
         assertEquals(2, communication.getCommunicationMap().size());
         assertEquals("czuj", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE));
-        assertEquals("czuj/java", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
+        assertEquals("czuj/test", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
 
 //        test rules
-        IRules rules = module.getRules();
-        assertTrue(rules instanceof RulesMonitor);
+        assertTrue(module.getRules() instanceof RulesMonitor);
 
+//        test connection service
+        assertEquals(1, app.getConnectionServiceList().size());
+        assertTrue(app.getConnectionServiceList().get(Constants.MQTT) instanceof MQTTConnectionService);
+        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServiceList().get(Constants.MQTT);
+        MQTTConnection connection = connectionService.getConnection();
+        assertNotNull(connection);
+        List<Module> moduleList = connectionService.getModulesList();
+        assertEquals(1, moduleList.size());
+        moduleList.forEach(m -> assertEquals(m.getCommunicationType(), Constants.MQTT));
+
+//        test topics map
+        Map<String, List<Module>> topicsMap = connectionService.getTopicsMap();
+        assertEquals(1, topicsMap.size());
+        assertEquals(topicsMap.get("czuj").get(0), module);
+        assertNotSame(topicsMap, connectionService.getTopicsMap());
+
+//        test actor
+        assertNotNull(connectionService.getActor());
+        
 //        test connection
-        assertTrue(app.getConnections().get(0) instanceof MQTTConnection);
-        MQTTConnection connection = (MQTTConnection) app.getConnections().get(0);
-        assertEquals(1, connection.getTopicsMap().size());
-        assertTrue(connection.getTopicsMap().get(communication.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE)).contains(module));
-        assertNull(connection.getTopicsMap().get(communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH)));
         assertFalse(connection.isConnected());
     }
     
@@ -64,9 +81,10 @@ public class MainApplicationTest {
         SmartHomeApp app = new SmartHomeApp();
         XMLConfiguration configuration = new XMLConfiguration(CONFIG_FILE);
         Map<String, String> props = new HashMap<>(6);
-        props.put("classname", "com.piotrak.modularity.modules.SwitchModule");
-        props.put("name", "Monitor");//because no RulesWiatrak file
-        props.put("icon", "wiatrak");
+        props.put("classname", "com.piotrak.impl.modularity.modules.SwitchModule");
+        props.put("name", "Glosniki");
+        props.put("displayName", "Głośniki");
+        props.put("icon", "speakers");
         props.put("conType", "MQTT");
         props.put("conSub", "czuj");
         props.put("conPub", "czuj/test");
@@ -78,41 +96,57 @@ public class MainApplicationTest {
         assertTrue(app.getModules().get(0) instanceof SwitchModule);
         SwitchModule module = (SwitchModule) app.getModules().get(0);
         assertEquals("Monitor", module.getName());
+        assertEquals("Monitor", module.getDisplayName());
         assertEquals("monitor", module.getIcon());
         
         assertTrue(app.getModules().get(1) instanceof SwitchModule);
         SwitchModule module2 = (SwitchModule) app.getModules().get(1);
-        assertEquals("Monitor", module2.getName());
-        assertEquals("wiatrak", module2.getIcon());
-
-//        test communication
+        assertEquals("Glosniki", module2.getName());
+        assertEquals("Głośniki", module2.getDisplayName());
+        assertEquals("speakers", module2.getIcon());
+    
+        //        test communication
         assertTrue(module.getCommunication() instanceof MQTTCommunication);
         MQTTCommunication communication = (MQTTCommunication) module.getCommunication();
         assertEquals(2, communication.getCommunicationMap().size());
         assertEquals("czuj", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE));
-        assertEquals("czuj/java", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
-        
+        assertEquals("czuj/test", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
+    
+        //        test communication
         assertTrue(module2.getCommunication() instanceof MQTTCommunication);
         MQTTCommunication communication2 = (MQTTCommunication) module2.getCommunication();
         assertEquals(2, communication2.getCommunicationMap().size());
         assertEquals("czuj", communication2.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE));
         assertEquals("czuj/test", communication2.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
+    
+        //        test rules
+        assertTrue(module.getRules() instanceof RulesMonitor);
+        assertTrue(module2.getRules() instanceof RulesGlosniki);
 
-//        test rules
-        IRules rules = module.getRules();
-        assertTrue(rules instanceof RulesMonitor);
-        
-        IRules rules2 = module2.getRules();
-        assertTrue(rules2 instanceof RulesMonitor);
+//        test connection service
+        assertEquals(1, app.getConnectionServiceList().size());
+        assertTrue(app.getConnectionServiceList().get(Constants.MQTT) instanceof MQTTConnectionService);
+        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServiceList().get(Constants.MQTT);
+        MQTTConnection connection = connectionService.getConnection();
+        assertNotNull(connection);
+        List<Module> moduleList = connectionService.getModulesList();
+        assertEquals(2, moduleList.size());
+        moduleList.forEach(m -> assertEquals(m.getCommunicationType(), Constants.MQTT));
+
+//        test topics map
+        Map<String, List<Module>> topicsMap = connectionService.getTopicsMap();
+        assertEquals(1, topicsMap.size());
+        assertEquals(topicsMap.get("czuj").size(), 2);
+        assertEquals(topicsMap.get("czuj").get(0), module);
+        assertEquals(topicsMap.get("czuj").get(1), module2);
+        assertNotSame(topicsMap, connectionService.getTopicsMap());
+
+//        test actor
+        assertNotNull(connectionService.getActor());
 
 //        test connection
-        assertTrue(app.getConnections().get(0) instanceof MQTTConnection);
-        MQTTConnection connection = (MQTTConnection) app.getConnections().get(0);
-        assertEquals(1, connection.getTopicsMap().size());
-        assertTrue(connection.getTopicsMap().get(communication.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE)).contains(module));
-        assertTrue(connection.getTopicsMap().get(communication.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE)).contains(module2));
-        assertNull(connection.getTopicsMap().get(communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH)));
         assertFalse(connection.isConnected());
+    
     }
     
     @Test
@@ -120,9 +154,10 @@ public class MainApplicationTest {
         SmartHomeApp app = new SmartHomeApp();
         XMLConfiguration configuration = new XMLConfiguration(CONFIG_FILE);
         Map<String, String> props = new HashMap<>(6);
-        props.put("classname", "com.piotrak.modularity.modules.SwitchModule");
-        props.put("name", "Monitor"); //because no RulesWiatrak file
-        props.put("icon", "wiatrak");
+        props.put("classname", "com.piotrak.impl.modularity.modules.SwitchModule");
+        props.put("name", "Glosniki");
+        props.put("displayName", "Głośniki");
+        props.put("icon", "speakers");
         props.put("conType", "MQTT");
         props.put("conSub", "czuj2");
         props.put("conPub", "czuj2/test");
@@ -134,19 +169,21 @@ public class MainApplicationTest {
         assertTrue(app.getModules().get(0) instanceof SwitchModule);
         SwitchModule module = (SwitchModule) app.getModules().get(0);
         assertEquals("Monitor", module.getName());
+        assertEquals("Monitor", module.getDisplayName());
         assertEquals("monitor", module.getIcon());
         
         assertTrue(app.getModules().get(1) instanceof SwitchModule);
         SwitchModule module2 = (SwitchModule) app.getModules().get(1);
-        assertEquals("Monitor", module2.getName());
-        assertEquals("wiatrak", module2.getIcon());
+        assertEquals("Glosniki", module2.getName());
+        assertEquals("Głośniki", module2.getDisplayName());
+        assertEquals("speakers", module2.getIcon());
 
 //        test communication
         assertTrue(module.getCommunication() instanceof MQTTCommunication);
         MQTTCommunication communication = (MQTTCommunication) module.getCommunication();
         assertEquals(2, communication.getCommunicationMap().size());
         assertEquals("czuj", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE));
-        assertEquals("czuj/java", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
+        assertEquals("czuj/test", communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
         
         assertTrue(module2.getCommunication() instanceof MQTTCommunication);
         MQTTCommunication communication2 = (MQTTCommunication) module2.getCommunication();
@@ -155,26 +192,40 @@ public class MainApplicationTest {
         assertEquals("czuj2/test", communication2.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH));
 
 //        test rules
-        IRules rules = module.getRules();
-        assertTrue(rules instanceof RulesMonitor);
-        
-        IRules rules2 = module2.getRules();
-        assertTrue(rules2 instanceof RulesMonitor);
+        assertTrue(module.getRules() instanceof RulesMonitor);
+        assertTrue(module2.getRules() instanceof RulesGlosniki);
+
+//        test connection service
+        assertEquals(1, app.getConnectionServiceList().size());
+        assertTrue(app.getConnectionServiceList().get(Constants.MQTT) instanceof MQTTConnectionService);
+        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServiceList().get(Constants.MQTT);
+        MQTTConnection connection = connectionService.getConnection();
+        assertNotNull(connection);
+        List<Module> moduleList = connectionService.getModulesList();
+        assertEquals(2, moduleList.size());
+        moduleList.forEach(m -> assertEquals(m.getCommunicationType(), Constants.MQTT));
+
+//        test topics map
+        Map<String, List<Module>> topicsMap = connectionService.getTopicsMap();
+        assertEquals(2, topicsMap.size());
+        assertEquals(topicsMap.get("czuj").size(), 1);
+        assertEquals(topicsMap.get("czuj2").size(), 1);
+        assertEquals(topicsMap.get("czuj").get(0), module);
+        assertEquals(topicsMap.get("czuj2").get(0), module2);
+        assertNotSame(topicsMap, connectionService.getTopicsMap());
+
+//        test actor
+        assertNotNull(connectionService.getActor());
 
 //        test connection
-        assertTrue(app.getConnections().get(0) instanceof MQTTConnection);
-        MQTTConnection connection = (MQTTConnection) app.getConnections().get(0);
-        assertEquals(2, connection.getTopicsMap().size());
-        assertTrue(connection.getTopicsMap().get(communication.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE)).contains(module));
-        assertTrue(connection.getTopicsMap().get(communication2.getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE)).contains(module2));
-        assertNull(connection.getTopicsMap().get(communication.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH)));
-        assertNull(connection.getTopicsMap().get(communication2.getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH)));
         assertFalse(connection.isConnected());
+    
     }
     
     private void addModule(XMLConfiguration configuration, Map<String, String> props, int pos) {
         configuration.addProperty("modules.module(" + pos + ").classname", props.get("classname"));
         configuration.addProperty("modules.module(" + pos + ").name", props.get("name"));
+        configuration.addProperty("modules.module(" + pos + ").displayName", props.get("displayName"));
         configuration.addProperty("modules.module(" + pos + ").icon", props.get("icon"));
         configuration.addProperty("modules.module(" + pos + ").connection.type", props.get("conType"));
         configuration.addProperty("modules.module(" + pos + ").connection.topic-subscribe", props.get("conSub"));

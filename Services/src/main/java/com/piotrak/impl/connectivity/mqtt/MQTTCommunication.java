@@ -1,7 +1,7 @@
-package com.piotrak.connectivity.mqtt;
+package com.piotrak.impl.connectivity.mqtt;
 
 import com.piotrak.Constants;
-import com.piotrak.connectivity.ICommunication;
+import com.piotrak.contract.connectivity.ICommunication;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 
 import java.util.HashMap;

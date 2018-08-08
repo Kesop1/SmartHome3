@@ -1,4 +1,4 @@
-package com.piotrak.connectivity;
+package com.piotrak.contract.connectivity;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 

@@ -1,6 +1,6 @@
 package com.piotrak.test.mqtt;
 
-import com.piotrak.connectivity.mqtt.MQTTConnection;
+import com.piotrak.impl.connectivity.mqtt.MQTTConnection;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -15,7 +15,7 @@ public class MQTTConnectionTest {
     @Test
     public void correctConfigTest() {
         MQTTConnection connection = new MQTTConnection();
-        connection.config(getSubconfig(), null);
+        connection.config(getSubconfig());
         assertEquals(connection.getHost(), "192.168.1.103");
         assertEquals(connection.getPort(), "1883");
         assertEquals(connection.getProtocol(), "tcp");
@@ -28,7 +28,7 @@ public class MQTTConnectionTest {
         connectionConfig.clearProperty("host");
         connectionConfig.clearProperty("port");
         connectionConfig.clearProperty("protocol");
-        connection.config(connectionConfig, null);
+        connection.config(connectionConfig);
         assertEquals(connection.getHost(), "0.0.0.0");
         assertEquals(connection.getPort(), "0");
         assertEquals(connection.getProtocol(), "tcp");

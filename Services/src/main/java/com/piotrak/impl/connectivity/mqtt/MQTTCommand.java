@@ -1,6 +1,6 @@
-package com.piotrak.connectivity.mqtt;
+package com.piotrak.impl.connectivity.mqtt;
 
-import com.piotrak.connectivity.ICommand;
+import com.piotrak.contract.connectivity.ICommand;
 
 public class MQTTCommand implements ICommand {
     

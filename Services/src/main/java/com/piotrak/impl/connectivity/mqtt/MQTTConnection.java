@@ -1,46 +1,44 @@
-package com.piotrak.connectivity.mqtt;
+package com.piotrak.impl.connectivity.mqtt;
 
-import com.piotrak.Constants;
-import com.piotrak.connectivity.ICommand;
-import com.piotrak.connectivity.IConnection;
-import com.piotrak.modularity.modules.Module;
+import com.piotrak.contract.connectivity.ICommand;
+import com.piotrak.contract.connectivity.IConnection;
+import com.piotrak.contract.modularity.actors.IActor;
+import com.piotrak.impl.modularity.mqtt.actors.MQTTActor;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class MQTTConnection implements IConnection {
+    
+    private static final Logger LOGGER = Logger.getLogger(MQTTConnection.class);
+    private static final String SEPARATOR = "://";
     
     private String host;
     private String port;
     private String protocol;
-    private static final String SEPARATOR = "://";
-    private static final Logger LOGGER = Logger.getLogger(MQTTConnection.class);
     private MqttClient mqttClient;
     private String uri = "";
-    private Map<String, List<Module>> topicsMap;
     
     @Override
-    public void config(HierarchicalConfiguration config, List<Module> moduleList) {
+    public void config(HierarchicalConfiguration config) {
         host = config.getString("host") == null ? "0.0.0.0" : config.getString("host");
         port = config.getString("port") == null ? "0" : config.getString("port");
         protocol = config.getString("protocol") == null ? "tcp" : config.getString("protocol");
         uri = protocol + SEPARATOR + host + ":" + port;
-        topicsMap = loadTopics(moduleList);
     }
     
     @Override
-    public void connect() {
+    public void connect(IActor actor) {
+        if (!(actor instanceof MQTTActor)) {
+            LOGGER.error("Incorrect Actor provided fot the MQTTConnection");
+            return;
+        }
         try {
             mqttClient = new MqttClient(uri, MqttClient.generateClientId(), new MemoryPersistence());
-            setCallback();
+            setCallback((MQTTActor) actor);
             mqttClient.connect();
-            listenForCommand();
+            LOGGER.info("MQTT connection established");
         } catch (MqttException e) {
             LOGGER.error("Exception occurred while establishing MQTTConnection", e);
         }
@@ -78,20 +76,7 @@ public class MQTTConnection implements IConnection {
         }
     }
     
-    @Override
-    public void listenForCommand() {
-        if (isConnected()) {
-            for (String topic : topicsMap.keySet()) {
-                try {
-                    mqttClient.subscribe(topic);
-                } catch (MqttException e) {
-                    LOGGER.error("Error while subscribing to topic " + topic, e);
-                }
-            }
-        }
-    }
-    
-    private void setCallback() {
+    private void setCallback(MQTTActor actor) {
         if (mqttClient != null) {
             mqttClient.setCallback(new MqttCallback() {
     
@@ -105,7 +90,7 @@ public class MQTTConnection implements IConnection {
                     String message = new String(mqttMessage.getPayload());
                     LOGGER.info("Message received in topic " + s + ": " + message);
                     MQTTCommand command = new MQTTCommand(s, message);
-                    useRules(command);
+                    actor.actOnCommand(command, MQTTConnection.this);
                 }
                 
                 @Override
@@ -114,32 +99,6 @@ public class MQTTConnection implements IConnection {
                 }
             });
         }
-    }
-    
-    private void useRules(MQTTCommand command) {
-        for (Map.Entry<String, List<Module>> pair : topicsMap.entrySet()) {
-            String topic = pair.getKey();
-            if (topic.equals(command.getTopic())) {
-                List<Module> modules = pair.getValue();
-                modules.forEach(module -> module.getRules().useRules(command, module, this));
-            }
-        }
-    }
-    
-    private Map<String, List<Module>> loadTopics(List<Module> moduleList) {
-        Map<String, List<Module>> topics = new HashMap<>(0);
-        if (moduleList != null) {
-            for (Module module : moduleList) {
-                String topic = module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE);
-                if (!topics.containsKey(topic)) {
-                    topics.put(topic, new ArrayList<>(1));
-                }
-                topics.get(topic).add(module);
-            }
-        } else {
-            LOGGER.warn("Modules list is empty, unable to load topics");
-        }
-        return topics;
     }
     
     public String getHost() {
@@ -154,16 +113,7 @@ public class MQTTConnection implements IConnection {
         return protocol;
     }
     
-    
-    public Map<String, List<Module>> getTopicsMap() {
-        Map<String, List<Module>> topicsMapCopy = new HashMap<>(topicsMap.size());
-        for (Map.Entry<String, List<Module>> pair : topicsMap.entrySet()) {
-            String topic = pair.getKey();
-            List<Module> modulesList = new ArrayList<>(topicsMap.get(topic).size());
-            modulesList.addAll(pair.getValue());
-            topicsMapCopy.put(topic, modulesList);
-        }
-        return topicsMapCopy;
+    public MqttClient getMqttClient() {
+        return mqttClient;
     }
-    
 }

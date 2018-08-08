@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <connections>
-        <connection id="mqtt">
-            <classname>com.piotrak.connectivity.mqtt.MQTTConnection</classname>
+        <connection>
+            <type>MQTT</type>
             <host>192.168.1.103</host>
             <port>1883</port>
             <protocol>tcp</protocol>
@@ -11,7 +11,7 @@
 
     <modules>
         <module>
-            <classname>com.piotrak.modularity.modules.SwitchModule</classname>
+            <classname>com.piotrak.impl.modularity.modules.SwitchModule</classname>
             <name>Monitor</name>
             <icon>monitor</icon>
             <connection>
@@ -21,9 +21,9 @@
             </connection>
         </module>
         <module>
-            <classname>com.piotrak.modularity.modules.SwitchModule</classname>
+            <classname>com.piotrak.impl.modularity.modules.SwitchModule</classname>
             <name>Glosniki</name>
-            <displayname>Głośniki</displayname>
+            <displayName>Głośniki</displayName>
             <icon>speakers</icon>
             <connection>
                 <type>MQTT</type>

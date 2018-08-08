@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <connections>
-        <connection id="mqtt">
-            <classname>com.piotrak.impl.connectivity.mqtt.MQTTConnection</classname>
+        <connection>
+            <type>MQTT</type>
             <host>192.168.1.103</host>
             <port>1883</port>
             <protocol>tcp</protocol>
@@ -17,9 +17,8 @@
             <connection>
                 <type>MQTT</type>
                 <topic-subscribe>czuj</topic-subscribe>
-                <topic-publish>czuj/java</topic-publish>
+                <topic-publish>czuj/test</topic-publish>
             </connection>
         </module>
     </modules>
-
 </config>

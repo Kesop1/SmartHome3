@@ -1,9 +1,9 @@
-package com.piotrak.modularity.modules;
+package com.piotrak.contract.modularity.modules;
 
 import com.piotrak.Constants;
-import com.piotrak.connectivity.ICommunication;
-import com.piotrak.connectivity.mqtt.MQTTCommunication;
-import com.piotrak.modularity.rules.IRules;
+import com.piotrak.contract.connectivity.ICommunication;
+import com.piotrak.contract.modularity.rules.IRules;
+import com.piotrak.impl.connectivity.mqtt.MQTTCommunication;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -22,9 +22,11 @@ public abstract class Module {
     
     private ICommunication communication;
     
+    private String communicationType;
+    
     public void config(HierarchicalConfiguration config) {
         name = config.getString("name") == null ? "" : config.getString("name");
-        displayName = config.getString("displayname") == null ? name : config.getString("displayname");
+        displayName = config.getString("displayName") == null ? name : config.getString("displayName");
         icon = config.getString("icon") == null ? "" : config.getString("icon");
         setRules();
         setCommunication(config);
@@ -36,7 +38,8 @@ public abstract class Module {
             return;
         }
         try {
-            rules = (IRules) Class.forName(IRules.class.getPackage().getName() + "." + Constants.RULES + name).newInstance();
+            String packageName = IRules.class.getPackage().getName().replace("contract", "impl");
+            rules = (IRules) Class.forName(packageName + "." + Constants.RULES + name).newInstance();
         } catch (ClassNotFoundException e) {
             LOGGER.warn("Could not locate rules file for " + this.getClass().getName() + " with name " + name, e);
         } catch (IllegalAccessException | InstantiationException e) {
@@ -64,8 +67,13 @@ public abstract class Module {
         return communication;
     }
     
+    public String getCommunicationType() {
+        return communicationType;
+    }
+    
     private void setCommunication(HierarchicalConfiguration config) {
         String connectionType = config.getString("connection.type");
+        communicationType = connectionType;
         HierarchicalConfiguration connectionsList = config.configurationAt("connection");
         if (Constants.MQTT.equals(connectionType)) {
             communication = new MQTTCommunication();
