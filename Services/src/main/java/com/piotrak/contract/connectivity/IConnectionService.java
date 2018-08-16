@@ -1,7 +1,7 @@
 package com.piotrak.contract.connectivity;
 
-import com.piotrak.contract.modularity.actors.IActor;
 import com.piotrak.contract.modularity.modules.Module;
+import com.piotrak.impl.types.ConnectivityType;
 
 import java.util.List;
 
@@ -15,8 +15,10 @@ public interface IConnectionService {
     
     void startService();
     
-    void config(List<Module> modules, IConnection connection);
+    void config(List<Module> modules, IConnection connection, ActorsService actorsService);
     
-    IActor getActor();
+    ActorsService getActorsService();
+    
+    ConnectivityType getConnectivityType();
     
 }

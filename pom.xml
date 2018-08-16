@@ -25,7 +25,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.piotrak.Main</mainClass>
+                            <mainClass>com.piotrak.SmartHomeApp</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

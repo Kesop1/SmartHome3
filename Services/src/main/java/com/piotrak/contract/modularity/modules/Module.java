@@ -4,6 +4,7 @@ import com.piotrak.Constants;
 import com.piotrak.contract.connectivity.ICommunication;
 import com.piotrak.contract.modularity.rules.IRules;
 import com.piotrak.impl.connectivity.mqtt.MQTTCommunication;
+import com.piotrak.impl.types.ModuleType;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -12,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class Module {
+public class Module {
     
     private static final Logger LOGGER = org.apache.log4j.Logger.getLogger(Module.class);
     
@@ -21,6 +22,8 @@ public abstract class Module {
     private static final String POSX = "posX";
     
     private static final String POSY = "posY";
+    
+    private ModuleType type;
     
     private String name;
     
@@ -32,14 +35,13 @@ public abstract class Module {
     
     private ICommunication communication;
     
-    private String communicationType;
-    
     private Map<String, Map<String, Integer>> visibility = new HashMap<>(1);
     
     public void config(HierarchicalConfiguration config) {
         name = config.getString("name") == null ? "" : config.getString("name");
         displayName = config.getString("displayName") == null ? name : config.getString("displayName");
         icon = config.getString("icon") == null ? "" : config.getString("icon");
+        type = ModuleType.valueOf(config.getString("type").toUpperCase());
         setRules();
         setCommunication(config);
         setVisibility(config);
@@ -62,7 +64,6 @@ public abstract class Module {
     
     private void setCommunication(HierarchicalConfiguration config) {
         String connectionType = config.getString("connection.type");
-        communicationType = connectionType;
         HierarchicalConfiguration connectionsList = config.configurationAt("connection");
         if (Constants.MQTT.equals(connectionType)) {
             communication = new MQTTCommunication();
@@ -84,6 +85,10 @@ public abstract class Module {
         return displayName;
     }
     
+    public ModuleType getType() {
+        return type;
+    }
+    
     public String getIcon() {
         return icon;
     }
@@ -94,10 +99,6 @@ public abstract class Module {
     
     public ICommunication getCommunication() {
         return communication;
-    }
-    
-    public String getCommunicationType() {
-        return communicationType;
     }
     
     private void setVisibility(HierarchicalConfiguration config) {

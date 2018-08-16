@@ -1,9 +1,9 @@
 package com.piotrak.impl.connectivity.mqtt;
 
+import com.piotrak.contract.connectivity.ActorsService;
 import com.piotrak.contract.connectivity.ICommand;
 import com.piotrak.contract.connectivity.IConnection;
-import com.piotrak.contract.modularity.actors.IActor;
-import com.piotrak.impl.modularity.mqtt.actors.MQTTActor;
+import com.piotrak.impl.types.ConnectivityType;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.*;
@@ -13,6 +13,8 @@ public class MQTTConnection implements IConnection {
     
     private static final Logger LOGGER = Logger.getLogger(MQTTConnection.class);
     private static final String SEPARATOR = "://";
+    
+    private ConnectivityType connectivityType = ConnectivityType.MQTT;
     
     private String host;
     private String port;
@@ -29,14 +31,10 @@ public class MQTTConnection implements IConnection {
     }
     
     @Override
-    public void connect(IActor actor) {
-        if (!(actor instanceof MQTTActor)) {
-            LOGGER.error("Incorrect Actor provided fot the MQTTConnection");
-            return;
-        }
+    public void connect(ActorsService actorsService) {
         try {
             mqttClient = new MqttClient(uri, MqttClient.generateClientId(), new MemoryPersistence());
-            setCallback((MQTTActor) actor);
+            setCallback(actorsService);
             mqttClient.connect();
             LOGGER.info("MQTT connection established");
         } catch (MqttException e) {
@@ -76,7 +74,7 @@ public class MQTTConnection implements IConnection {
         }
     }
     
-    private void setCallback(MQTTActor actor) {
+    private void setCallback(ActorsService actorsService) {
         if (mqttClient != null) {
             mqttClient.setCallback(new MqttCallback() {
     
@@ -90,7 +88,7 @@ public class MQTTConnection implements IConnection {
                     String message = new String(mqttMessage.getPayload());
                     LOGGER.info("Message received in topic " + s + ": " + message);
                     MQTTCommand command = new MQTTCommand(s, message);
-                    actor.actOnCommand(command, MQTTConnection.this);
+                    actorsService.commandReceived(command);
                 }
                 
                 @Override
@@ -115,5 +113,9 @@ public class MQTTConnection implements IConnection {
     
     public MqttClient getMqttClient() {
         return mqttClient;
+    }
+    
+    public ConnectivityType getConnectivityType() {
+        return connectivityType;
     }
 }

@@ -1,10 +1,13 @@
 package com.piotrak;
 
+import com.piotrak.contract.connectivity.ActorsService;
 import com.piotrak.contract.connectivity.IConnection;
 import com.piotrak.contract.connectivity.IConnectionService;
 import com.piotrak.contract.modularity.modules.Module;
 import com.piotrak.impl.connectivity.mqtt.MQTTConnection;
 import com.piotrak.impl.connectivity.mqtt.MQTTConnectionService;
+import com.piotrak.impl.types.ConnectivityType;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.Logger;
@@ -18,23 +21,43 @@ public class SmartHomeApp {
     
     public static final Logger LOGGER = Logger.getLogger(SmartHomeApp.class);
     
+    public static final String CONFIG_FILE = "config.xml";
+    
     public static final String CONFIG_MODULE = "modules.module";
     
     private static final String CONFIG_CONNECTION = "connections.connection";
     
-    private List<Module> modules = new ArrayList<>(1);
+    private List<Module> allModulesList = new ArrayList<>(1);
     
-    private Map<String, IConnectionService> connectionServiceList = new HashMap<>(1);
+    private Map<ConnectivityType, IConnectionService> connectionServicesList = new HashMap<>(1);
+    
+    private ActorsService actorsService = new ActorsService();
+    
+    public static void main(String[] args) {
+        String config = CONFIG_FILE;
+        if (args.length > 0) {
+            for (int i = 0; i < args.length; i++) {
+                if (args[i].equals("-C") && args.length > i + 1) {
+                    config = args[i + 1];
+                }
+            }
+        }
+        try {
+            XMLConfiguration configFile = new XMLConfiguration(config);
+            SmartHomeApp app = new SmartHomeApp();
+            app.loadConfig(configFile);
+            ServicesApp servicesApp = new ServicesApp(app.getConnectionServicesList());
+            servicesApp.connect();
+            VisibilityApp visibilityApp = new VisibilityApp();
+//            visibilityApp.runVisibilityApp(args, app.getConnectionServicesList());
+        } catch (ConfigurationException e) {
+            LOGGER.error("Problem occurred while reading the config file: " + config + "\n", e);
+        }
+    }
     
     public void loadConfig(XMLConfiguration config) {
         loadModules(config);
         loadConnectionServices(config);
-    }
-    
-    public void connect() {
-        for (IConnectionService connectionService : connectionServiceList.values()) {
-            connectionService.startService();
-        }
     }
     
     private void loadConnectionServices(XMLConfiguration config) {
@@ -42,8 +65,8 @@ public class SmartHomeApp {
         for (HierarchicalConfiguration connectionConfig : connectionConfigList) {
             IConnectionService connectionService;
             IConnection connection;
-            String type = connectionConfig.getString("type");
-            if (Constants.MQTT.equals(type)) {
+            ConnectivityType connectivityType = ConnectivityType.valueOf(connectionConfig.getString("type"));
+            if (ConnectivityType.MQTT.equals(connectivityType)) {
                 connectionService = new MQTTConnectionService();
                 connection = new MQTTConnection();
             } else {
@@ -51,15 +74,16 @@ public class SmartHomeApp {
                 return;
             }
             connection.config(connectionConfig);
-            connectionService.config(getModulesByType(type), connection);
-            connectionServiceList.put(type, connectionService);
+            connectionService.config(getModulesByCommunicationType(connectivityType), connection, actorsService);
+            connectionServicesList.put(connectivityType, connectionService);
         }
+        actorsService.config(connectionServicesList);
     }
     
-    private List<Module> getModulesByType(String type) {
+    private List<Module> getModulesByCommunicationType(ConnectivityType connectivityType) {
         List<Module> modulesList = new ArrayList<>(1);
-        modules.forEach(module -> {
-            if (type.equals(module.getCommunicationType())) {
+        allModulesList.forEach(module -> {
+            if (connectivityType.equals(module.getCommunication().getConnectivityType())) {
                 modulesList.add(module);
             }
         });
@@ -69,22 +93,18 @@ public class SmartHomeApp {
     private void loadModules(XMLConfiguration config) {
         List<HierarchicalConfiguration> moduleConfigList = config.configurationsAt(CONFIG_MODULE);
         for (HierarchicalConfiguration moduleConfig : moduleConfigList) {
-            String className = moduleConfig.getString("classname");
-            try {
-                Module module = (Module) Class.forName(className).newInstance();
-                module.config(moduleConfig);
-                modules.add(module);
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                LOGGER.error("Could not instantiate module " + className, e);
-            }
+            Module module = new Module();
+            module.config(moduleConfig);
+            allModulesList.add(module);
         }
     }
     
-    public List<Module> getModules() {
-        return modules; //TODO security
+    
+    public List<Module> getAllModulesList() {
+        return allModulesList; //TODO security
     }
     
-    public Map<String, IConnectionService> getConnectionServiceList() {
-        return connectionServiceList; //TODO security
+    public Map<ConnectivityType, IConnectionService> getConnectionServicesList() {
+        return connectionServicesList; //TODO security
     }
 }

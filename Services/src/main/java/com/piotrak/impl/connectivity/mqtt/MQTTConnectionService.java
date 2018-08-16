@@ -1,11 +1,12 @@
 package com.piotrak.impl.connectivity.mqtt;
 
 import com.piotrak.Constants;
+import com.piotrak.contract.connectivity.ActorsService;
 import com.piotrak.contract.connectivity.ICommand;
 import com.piotrak.contract.connectivity.IConnection;
 import com.piotrak.contract.connectivity.IConnectionService;
 import com.piotrak.contract.modularity.modules.Module;
-import com.piotrak.impl.modularity.mqtt.actors.MQTTActor;
+import com.piotrak.impl.types.ConnectivityType;
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
@@ -18,16 +19,18 @@ public class MQTTConnectionService implements IConnectionService {
     
     private static final Logger LOGGER = Logger.getLogger(MQTTConnectionService.class);
     
+    private ConnectivityType connectivityType = ConnectivityType.MQTT;
+    
     private MQTTConnection connection;
     
     private List<Module> modulesList;
     
     private Map<String, List<Module>> topicsMap = new HashMap<>(1);
     
-    private MQTTActor actor = null;
+    private ActorsService actorsService = null;
     
     @Override
-    public void config(List<Module> modules, IConnection connection) {
+    public void config(List<Module> modules, IConnection connection, ActorsService actorsService) {
         if (!(connection instanceof MQTTConnection)) {
             LOGGER.error("Invalid connection provided for the MQTTConnectionService");
             return;
@@ -35,13 +38,13 @@ public class MQTTConnectionService implements IConnectionService {
         setModulesList(modules);
         setConnection((MQTTConnection) connection);
         loadTopics();
-        actor = new MQTTActor(getTopicsMap());
+        this.actorsService = actorsService;
     }
     
     @Override
     public void startService() {
         if (connection != null) {
-            connection.connect(actor);
+            connection.connect(actorsService);
             topicsMap.keySet().forEach(topic -> {
                 try {
                     connection.getMqttClient().subscribe(topic);
@@ -52,6 +55,16 @@ public class MQTTConnectionService implements IConnectionService {
         } else {
             LOGGER.error("Unable to start MQTT service, connection was not set");
         }
+    }
+    
+    private void loadTopics() {
+        modulesList.forEach(module -> {
+            String topic = module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE);
+            if (!topicsMap.containsKey(topic)) {
+                topicsMap.put(topic, new ArrayList<>(1));
+            }
+            topicsMap.get(topic).add(module);
+        });
     }
     
     @Override
@@ -78,18 +91,8 @@ public class MQTTConnectionService implements IConnectionService {
     }
     
     @Override
-    public MQTTActor getActor() {
-        return actor;
-    }
-    
-    private void loadTopics() {
-        modulesList.forEach(module -> {
-            String topic = module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE);
-            if (!topicsMap.containsKey(topic)) {
-                topicsMap.put(topic, new ArrayList<>(1));
-            }
-            topicsMap.get(topic).add(module);
-        });
+    public ActorsService getActorsService() {
+        return actorsService;
     }
     
     public Map<String, List<Module>> getTopicsMap() {
@@ -103,4 +106,8 @@ public class MQTTConnectionService implements IConnectionService {
         return topicsMapCopy;
     }
     
+    @Override
+    public ConnectivityType getConnectivityType() {
+        return connectivityType;
+    }
 }

@@ -1,8 +1,11 @@
 package com.piotrak.impl.connectivity.visibility;
 
 import com.piotrak.contract.connectivity.ICommand;
+import com.piotrak.impl.types.ConnectivityType;
 
 public class VisibilityCommand implements ICommand {
+    
+    private ConnectivityType connectivityType = ConnectivityType.VISIBILITY;
     
     private String commandText;
     
@@ -19,5 +22,10 @@ public class VisibilityCommand implements ICommand {
     
     public int getCommandValue() {
         return commandValue;
+    }
+    
+    @Override
+    public ConnectivityType getConnectivityType() {
+        return connectivityType;
     }
 }

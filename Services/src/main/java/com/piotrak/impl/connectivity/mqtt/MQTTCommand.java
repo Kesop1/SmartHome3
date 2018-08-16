@@ -1,8 +1,11 @@
 package com.piotrak.impl.connectivity.mqtt;
 
 import com.piotrak.contract.connectivity.ICommand;
+import com.piotrak.impl.types.ConnectivityType;
 
 public class MQTTCommand implements ICommand {
+    
+    private ConnectivityType connectivityType = ConnectivityType.MQTT;
     
     private String topic;
     
@@ -19,5 +22,10 @@ public class MQTTCommand implements ICommand {
     
     public String getMessage() {
         return message;
+    }
+    
+    @Override
+    public ConnectivityType getConnectivityType() {
+        return connectivityType;
     }
 }
