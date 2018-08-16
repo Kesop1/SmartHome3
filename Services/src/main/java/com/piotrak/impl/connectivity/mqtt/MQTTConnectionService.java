@@ -35,8 +35,8 @@ public class MQTTConnectionService implements IConnectionService {
             LOGGER.error("Invalid connection provided for the MQTTConnectionService");
             return;
         }
-        setModulesList(modules);
-        setConnection((MQTTConnection) connection);
+        this.modulesList = modules;
+        this.connection = (MQTTConnection) connection;
         loadTopics();
         this.actorsService = actorsService;
     }
@@ -77,17 +77,9 @@ public class MQTTConnectionService implements IConnectionService {
         return connection;
     }
     
-    private void setConnection(MQTTConnection connection) {
-        this.connection = connection;
-    }
-    
     @Override
     public List<Module> getModulesList() {
-        return modulesList;
-    }
-    
-    private void setModulesList(List<Module> modulesList) {
-        this.modulesList = modulesList;
+        return new ArrayList<>(modulesList);
     }
     
     @Override

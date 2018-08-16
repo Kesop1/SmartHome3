@@ -13,7 +13,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +29,7 @@ public class SmartHomeApp {
     
     private List<Module> allModulesList = new ArrayList<>(1);
     
-    private Map<ConnectivityType, IConnectionService> connectionServicesList = new HashMap<>(1);
+    private Map<ConnectivityType, IConnectionService> connectionServicesList = new EnumMap<>(ConnectivityType.class);
     
     private ActorsService actorsService = new ActorsService();
     
@@ -99,12 +99,11 @@ public class SmartHomeApp {
         }
     }
     
-    
     public List<Module> getAllModulesList() {
-        return allModulesList; //TODO security
+        return new ArrayList<>(allModulesList);
     }
     
     public Map<ConnectivityType, IConnectionService> getConnectionServicesList() {
-        return connectionServicesList; //TODO security
+        return new EnumMap<>(connectionServicesList);
     }
 }

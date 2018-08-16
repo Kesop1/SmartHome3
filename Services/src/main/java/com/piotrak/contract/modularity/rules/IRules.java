@@ -5,6 +5,7 @@ import com.piotrak.contract.connectivity.ICommand;
 import com.piotrak.contract.modularity.modules.Module;
 import com.piotrak.impl.connectivity.mqtt.MQTTCommand;
 import com.piotrak.impl.connectivity.visibility.VisibilityCommand;
+import com.piotrak.impl.types.ConnectivityType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public interface IRules {
      */
     default List<ICommand> onButtonClick(VisibilityCommand command, Module module) {
         List<ICommand> newCommands = new ArrayList<>(0);
-        if (Constants.MQTT.equals(module.getCommunication().getConnectivityType())) {
+        if (ConnectivityType.MQTT.equals(module.getCommunication().getConnectivityType())) {
             newCommands.add(new MQTTCommand(module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE), command.getCommandText()));
         }
         return newCommands;

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class MQTTActor implements IActor {
+public class MQTTActor implements IActor { //TODO: singleton
     
     private static final Logger LOGGER = Logger.getLogger(MQTTActor.class);
     

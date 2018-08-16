@@ -1,10 +1,30 @@
 package com.piotrak.scenes;
 
+import com.piotrak.Constants;
+import com.piotrak.SmartHomeApp;
+import com.piotrak.contract.modularity.modules.Module;
+import com.piotrak.impl.connectivity.mqtt.MQTTCommunication;
+import com.piotrak.impl.connectivity.mqtt.MQTTConnection;
+import com.piotrak.impl.connectivity.mqtt.MQTTConnectionService;
+import com.piotrak.impl.modularity.rules.RulesGlosniki;
+import com.piotrak.impl.modularity.rules.RulesMonitor;
+import com.piotrak.impl.types.ConnectivityType;
+import com.piotrak.impl.types.ModuleType;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.XMLConfiguration;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 public class MainApplicationTest {
     
     private static final String CONFIG_FILE = "config.xml";
     
-    /*
+    
     @Test
     public void outsideConfigFileTest() {
         SmartHomeApp.main(new String[]{"-C", "config.xml"});
@@ -18,9 +38,9 @@ public class MainApplicationTest {
         app.loadConfig(configuration);
 
 //        test module
-        assertEquals(1, app.getModules().size());
-        assertTrue(app.getModules().get(0) instanceof SwitchModule);
-        SwitchModule module = (SwitchModule) app.getModules().get(0);
+        assertEquals(1, app.getAllModulesList().size());
+        Module module = app.getAllModulesList().get(0);
+        assertEquals(module.getModuleType(), ModuleType.SWITCH);
         assertEquals("Monitor", module.getName());
         assertEquals("Monitor", module.getDisplayName());
         assertEquals("monitor", module.getIcon());
@@ -37,13 +57,13 @@ public class MainApplicationTest {
 
 //        test connection service
         assertEquals(1, app.getConnectionServicesList().size());
-        assertTrue(app.getConnectionServicesList().get(Constants.MQTT) instanceof MQTTConnectionService);
-        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServicesList().get(Constants.MQTT);
+        assertTrue(app.getConnectionServicesList().get(ConnectivityType.MQTT) instanceof MQTTConnectionService);
+        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServicesList().get(ConnectivityType.MQTT);
         MQTTConnection connection = connectionService.getConnection();
         assertNotNull(connection);
         List<Module> moduleList = connectionService.getModulesList();
         assertEquals(1, moduleList.size());
-        moduleList.forEach(m -> assertEquals(m.getCommunicationType(), Constants.MQTT));
+        moduleList.forEach(m -> assertEquals(m.getCommunication().getConnectivityType(), ConnectivityType.MQTT));
 
 //        test topics map
         Map<String, List<Module>> topicsMap = connectionService.getTopicsMap();
@@ -63,7 +83,7 @@ public class MainApplicationTest {
         SmartHomeApp app = new SmartHomeApp();
         XMLConfiguration configuration = new XMLConfiguration(CONFIG_FILE);
         Map<String, String> props = new HashMap<>(6);
-        props.put("classname", "com.piotrak.impl.modularity.modules.SwitchModule");
+        props.put("type", "switch");
         props.put("name", "Glosniki");
         props.put("displayName", "Głośniki");
         props.put("icon", "speakers");
@@ -74,15 +94,15 @@ public class MainApplicationTest {
         app.loadConfig(configuration);
         
         //        test module
-        assertEquals(2, app.getModules().size());
-        assertTrue(app.getModules().get(0) instanceof SwitchModule);
-        SwitchModule module = (SwitchModule) app.getModules().get(0);
+        assertEquals(2, app.getAllModulesList().size());
+        Module module = app.getAllModulesList().get(0);
+        assertEquals(module.getModuleType(), ModuleType.SWITCH);
         assertEquals("Monitor", module.getName());
         assertEquals("Monitor", module.getDisplayName());
         assertEquals("monitor", module.getIcon());
-        
-        assertTrue(app.getModules().get(1) instanceof SwitchModule);
-        SwitchModule module2 = (SwitchModule) app.getModules().get(1);
+    
+        Module module2 = app.getAllModulesList().get(1);
+        assertEquals(module2.getModuleType(), ModuleType.SWITCH);
         assertEquals("Glosniki", module2.getName());
         assertEquals("Głośniki", module2.getDisplayName());
         assertEquals("speakers", module2.getIcon());
@@ -107,13 +127,13 @@ public class MainApplicationTest {
 
 //        test connection service
         assertEquals(1, app.getConnectionServicesList().size());
-        assertTrue(app.getConnectionServicesList().get(Constants.MQTT) instanceof MQTTConnectionService);
-        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServicesList().get(Constants.MQTT);
+        assertTrue(app.getConnectionServicesList().get(ConnectivityType.MQTT) instanceof MQTTConnectionService);
+        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServicesList().get(ConnectivityType.MQTT);
         MQTTConnection connection = connectionService.getConnection();
         assertNotNull(connection);
         List<Module> moduleList = connectionService.getModulesList();
         assertEquals(2, moduleList.size());
-        moduleList.forEach(m -> assertEquals(m.getCommunicationType(), Constants.MQTT));
+        moduleList.forEach(m -> assertEquals(m.getCommunication().getConnectivityType(), ConnectivityType.MQTT));
 
 //        test topics map
         Map<String, List<Module>> topicsMap = connectionService.getTopicsMap();
@@ -136,7 +156,7 @@ public class MainApplicationTest {
         SmartHomeApp app = new SmartHomeApp();
         XMLConfiguration configuration = new XMLConfiguration(CONFIG_FILE);
         Map<String, String> props = new HashMap<>(6);
-        props.put("classname", "com.piotrak.impl.modularity.modules.SwitchModule");
+        props.put("type", "switch");
         props.put("name", "Glosniki");
         props.put("displayName", "Głośniki");
         props.put("icon", "speakers");
@@ -147,15 +167,15 @@ public class MainApplicationTest {
         app.loadConfig(configuration);
         
         //        test module
-        assertEquals(2, app.getModules().size());
-        assertTrue(app.getModules().get(0) instanceof SwitchModule);
-        SwitchModule module = (SwitchModule) app.getModules().get(0);
+        assertEquals(2, app.getAllModulesList().size());
+        Module module = app.getAllModulesList().get(0);
+        assertEquals(module.getModuleType(), ModuleType.SWITCH);
         assertEquals("Monitor", module.getName());
         assertEquals("Monitor", module.getDisplayName());
         assertEquals("monitor", module.getIcon());
-        
-        assertTrue(app.getModules().get(1) instanceof SwitchModule);
-        SwitchModule module2 = (SwitchModule) app.getModules().get(1);
+    
+        Module module2 = app.getAllModulesList().get(1);
+        assertEquals(module.getModuleType(), ModuleType.SWITCH);
         assertEquals("Glosniki", module2.getName());
         assertEquals("Głośniki", module2.getDisplayName());
         assertEquals("speakers", module2.getIcon());
@@ -179,13 +199,13 @@ public class MainApplicationTest {
 
 //        test connection service
         assertEquals(1, app.getConnectionServicesList().size());
-        assertTrue(app.getConnectionServicesList().get(Constants.MQTT) instanceof MQTTConnectionService);
-        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServicesList().get(Constants.MQTT);
+        assertTrue(app.getConnectionServicesList().get(ConnectivityType.MQTT) instanceof MQTTConnectionService);
+        MQTTConnectionService connectionService = (MQTTConnectionService) app.getConnectionServicesList().get(ConnectivityType.MQTT);
         MQTTConnection connection = connectionService.getConnection();
         assertNotNull(connection);
         List<Module> moduleList = connectionService.getModulesList();
         assertEquals(2, moduleList.size());
-        moduleList.forEach(m -> assertEquals(m.getCommunicationType(), Constants.MQTT));
+        moduleList.forEach(m -> assertEquals(m.getCommunication().getConnectivityType(), ConnectivityType.MQTT));
 
 //        test topics map
         Map<String, List<Module>> topicsMap = connectionService.getTopicsMap();
@@ -205,7 +225,7 @@ public class MainApplicationTest {
     }
     
     private void addModule(XMLConfiguration configuration, Map<String, String> props, int pos) {
-        configuration.addProperty("modules.module(" + pos + ").classname", props.get("classname"));
+        configuration.addProperty("modules.module(" + pos + ").type", props.get("type"));
         configuration.addProperty("modules.module(" + pos + ").name", props.get("name"));
         configuration.addProperty("modules.module(" + pos + ").displayName", props.get("displayName"));
         configuration.addProperty("modules.module(" + pos + ").icon", props.get("icon"));
@@ -214,5 +234,5 @@ public class MainApplicationTest {
         configuration.addProperty("modules.module(" + pos + ").connection.topic-publish", props.get("conPub"));
         
     }
-    */
+    
 }

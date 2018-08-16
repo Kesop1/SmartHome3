@@ -34,11 +34,15 @@ public class ActorsService {
     
     private List<IActor> getActors() {
         List<IActor> actorList = new ArrayList<>(1);
+        actorList.add(getMQTTActor());
+        return actorList;
+    }
+    
+    private IActor getMQTTActor() {
         MQTTActor mqttActor = new MQTTActor();
         MQTTConnectionService mqttConnectionService = (MQTTConnectionService) connectionServicesList.get(ConnectivityType.MQTT);
         mqttActor.setTopicsMap(mqttConnectionService.getTopicsMap());
-        actorList.add(mqttActor);
-        return actorList;
+        return mqttActor;
     }
     
     private void sendCommands(ICommand command, IConnection connection) {
@@ -47,10 +51,7 @@ public class ActorsService {
     
     
     public List<IActor> getActorsList() {
-        return actorsList;
+        return new ArrayList<>(actorsList);
     }
     
-    public void setActorsList(List<IActor> actorsList) {
-        this.actorsList = actorsList;
-    }
 }

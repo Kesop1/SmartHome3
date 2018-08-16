@@ -23,7 +23,7 @@ public class Module {
     
     private static final String POSY = "posY";
     
-    private ModuleType type;
+    private ModuleType moduleType;
     
     private String name;
     
@@ -41,7 +41,7 @@ public class Module {
         name = config.getString("name") == null ? "" : config.getString("name");
         displayName = config.getString("displayName") == null ? name : config.getString("displayName");
         icon = config.getString("icon") == null ? "" : config.getString("icon");
-        type = ModuleType.valueOf(config.getString("type").toUpperCase());
+        moduleType = ModuleType.valueOf(config.getString("type").toUpperCase());
         setRules();
         setCommunication(config);
         setVisibility(config);
@@ -85,8 +85,8 @@ public class Module {
         return displayName;
     }
     
-    public ModuleType getType() {
-        return type;
+    public ModuleType getModuleType() {
+        return moduleType;
     }
     
     public String getIcon() {

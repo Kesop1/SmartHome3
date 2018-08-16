@@ -11,7 +11,7 @@
 
     <modules>
         <module>
-            <classname>com.piotrak.impl.modularity.modules.SwitchModule</classname>
+            <type>switch</type>
             <name>Monitor</name>
             <icon>monitor</icon>
             <connection>
