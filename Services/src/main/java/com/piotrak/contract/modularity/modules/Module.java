@@ -10,18 +10,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Module {
     
     private static final Logger LOGGER = org.apache.log4j.Logger.getLogger(Module.class);
-    
-    private static final String CONFIG_VISIBILITY = "visibility.screen";
-    
-    private static final String POSX = "posX";
-    
-    private static final String POSY = "posY";
     
     private ModuleType moduleType;
     
@@ -44,7 +37,6 @@ public class Module {
         moduleType = ModuleType.valueOf(config.getString("type").toUpperCase());
         setRules();
         setCommunication(config);
-        setVisibility(config);
     }
     
     private void setRules() {
@@ -101,17 +93,4 @@ public class Module {
         return communication;
     }
     
-    private void setVisibility(HierarchicalConfiguration config) {
-        List<HierarchicalConfiguration> screens =
-                config.configurationsAt(CONFIG_VISIBILITY);
-        screens.forEach(screen -> {
-            String visName = screen.getString("[@name]");
-            Integer posX = screen.getInt("[@" + POSX + "]");
-            Integer posY = screen.getInt("[@" + POSY + "]");
-            Map<String, Integer> positions = new HashMap<>(2);
-            positions.put(POSX, posX);
-            positions.put(POSY, posY);
-            visibility.put(visName, positions);
-        });
-    }
 }

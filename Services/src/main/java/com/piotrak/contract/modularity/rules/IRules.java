@@ -23,7 +23,7 @@ public interface IRules {
     default List<ICommand> onButtonClick(VisibilityCommand command, Module module) {
         List<ICommand> newCommands = new ArrayList<>(0);
         if (ConnectivityType.MQTT.equals(module.getCommunication().getConnectivityType())) {
-            newCommands.add(new MQTTCommand(module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_SUBSCRIBE), command.getCommandText()));
+            newCommands.add(new MQTTCommand(module.getCommunication().getCommunicationMap().get(Constants.MQTT_TOPIC_PUBLISH), command.getCommandText()));
         }
         return newCommands;
     }

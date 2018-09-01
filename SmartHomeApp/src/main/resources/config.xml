@@ -21,9 +21,6 @@
                 <topic-subscribe>czuj</topic-subscribe>
                 <topic-publish>czuj/java</topic-publish>
             </connection>
-            <visibility>
-                <screen name="Main" posX="0" posY="0"/>
-            </visibility>
         </module>
         <module>
             <type>switch</type>
@@ -35,9 +32,38 @@
                 <topic-subscribe>czuj</topic-subscribe>
                 <topic-publish>czuj/java</topic-publish>
             </connection>
-            <visibility>
-                <screen name="Main" posX="0" posY="1"/>
-            </visibility>
         </module>
     </modules>
+
+    <visibility>
+        <screens>
+            <screen>
+                <name>Main</name>
+                <icon>home</icon>
+                <background>green</background>
+                <elements>
+                    <element X="0" Y="0">
+                        <module>Monitor</module>
+                    </element>
+                    <element X="0" Y="1">
+                        <module>Glosniki</module>
+                    </element>
+                    <element X="0" Y="2">
+                        <screen>Pokoj</screen>
+                    </element>
+                </elements>
+            </screen>
+            <screen>
+                <name>Pokoj</name>
+                <title>Pokój</title>
+                <icon>living_room</icon>
+                <background>black</background>
+                <elements>
+                    <element X="0" Y="1">
+                        <module>Monitor</module>
+                    </element>
+                </elements>
+            </screen>
+        </screens>
+    </visibility>
 </config>

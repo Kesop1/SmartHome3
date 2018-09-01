@@ -11,6 +11,7 @@ import com.piotrak.impl.modularity.rules.RulesMonitor;
 import com.piotrak.impl.types.ConnectivityType;
 import com.piotrak.impl.types.ModuleType;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,10 @@ public class MainApplicationTest {
     
     private static final String CONFIG_FILE = "config.xml";
     
+    public static final String CONFIG_MODULE = "modules.module";
+    
+    private static final String CONFIG_CONNECTION = "connections.connection";
+    
     
     @Test
     public void outsideConfigFileTest() {
@@ -33,9 +38,10 @@ public class MainApplicationTest {
     
     @Test
     public void oneMQTTModuleTest() throws ConfigurationException {
-        SmartHomeApp app = new SmartHomeApp();
         XMLConfiguration configuration = new XMLConfiguration(CONFIG_FILE);
-        app.loadConfig(configuration);
+        List<HierarchicalConfiguration> moduleConfigList = configuration.configurationsAt(CONFIG_MODULE);
+        List<HierarchicalConfiguration> connectionConfigList = configuration.configurationsAt(CONFIG_CONNECTION);
+        SmartHomeApp app = new SmartHomeApp(moduleConfigList, connectionConfigList);
 
 //        test module
         assertEquals(1, app.getAllModulesList().size());
@@ -80,7 +86,6 @@ public class MainApplicationTest {
     
     @Test
     public void twoSimilarMQTTModulesTest() throws ConfigurationException {
-        SmartHomeApp app = new SmartHomeApp();
         XMLConfiguration configuration = new XMLConfiguration(CONFIG_FILE);
         Map<String, String> props = new HashMap<>(6);
         props.put("type", "switch");
@@ -91,7 +96,9 @@ public class MainApplicationTest {
         props.put("conSub", "czuj");
         props.put("conPub", "czuj/test");
         addModule(configuration, props, 1);
-        app.loadConfig(configuration);
+        List<HierarchicalConfiguration> moduleConfigList = configuration.configurationsAt(CONFIG_MODULE);
+        List<HierarchicalConfiguration> connectionConfigList = configuration.configurationsAt(CONFIG_CONNECTION);
+        SmartHomeApp app = new SmartHomeApp(moduleConfigList, connectionConfigList);
         
         //        test module
         assertEquals(2, app.getAllModulesList().size());
@@ -153,7 +160,6 @@ public class MainApplicationTest {
     
     @Test
     public void twoDifferentMQTTModulesTest() throws ConfigurationException {
-        SmartHomeApp app = new SmartHomeApp();
         XMLConfiguration configuration = new XMLConfiguration(CONFIG_FILE);
         Map<String, String> props = new HashMap<>(6);
         props.put("type", "switch");
@@ -164,7 +170,9 @@ public class MainApplicationTest {
         props.put("conSub", "czuj2");
         props.put("conPub", "czuj2/test");
         addModule(configuration, props, 1);
-        app.loadConfig(configuration);
+        List<HierarchicalConfiguration> moduleConfigList = configuration.configurationsAt(CONFIG_MODULE);
+        List<HierarchicalConfiguration> connectionConfigList = configuration.configurationsAt(CONFIG_CONNECTION);
+        SmartHomeApp app = new SmartHomeApp(moduleConfigList, connectionConfigList);
         
         //        test module
         assertEquals(2, app.getAllModulesList().size());

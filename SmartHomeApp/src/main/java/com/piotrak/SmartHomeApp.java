@@ -27,11 +27,18 @@ public class SmartHomeApp {
     
     private static final String CONFIG_CONNECTION = "connections.connection";
     
+    private static final String CONFIG_SCREEN = "visibility.screens.screen";
+    
     private List<Module> allModulesList = new ArrayList<>(1);
     
     private Map<ConnectivityType, IConnectionService> connectionServicesList = new EnumMap<>(ConnectivityType.class);
     
     private ActorsService actorsService = new ActorsService();
+    
+    public SmartHomeApp(List<HierarchicalConfiguration> moduleConfigList, List<HierarchicalConfiguration> connectionConfigList) {
+        loadModules(moduleConfigList);
+        loadConnectionServices(connectionConfigList);
+    }
     
     public static void main(String[] args) {
         String config = CONFIG_FILE;
@@ -44,24 +51,22 @@ public class SmartHomeApp {
         }
         try {
             XMLConfiguration configFile = new XMLConfiguration(config);
-            SmartHomeApp app = new SmartHomeApp();
-            app.loadConfig(configFile);
+            List<HierarchicalConfiguration> moduleConfigList = configFile.configurationsAt(CONFIG_MODULE);
+            List<HierarchicalConfiguration> connectionConfigList = configFile.configurationsAt(CONFIG_CONNECTION);
+            List<HierarchicalConfiguration> screenConfigList = configFile.configurationsAt(CONFIG_SCREEN);
+            SmartHomeApp app = new SmartHomeApp(moduleConfigList, connectionConfigList);
             ServicesApp servicesApp = new ServicesApp(app.getConnectionServicesList());
             servicesApp.connect();
             VisibilityApp visibilityApp = new VisibilityApp();
-//            visibilityApp.runVisibilityApp(args, app.getConnectionServicesList());
+            visibilityApp.setActorsService(app.actorsService);
+            visibilityApp.config(screenConfigList, app.getAllModulesList());
+            visibilityApp.runVisibilityApp(args, app.getConnectionServicesList());
         } catch (ConfigurationException e) {
             LOGGER.error("Problem occurred while reading the config file: " + config + "\n", e);
         }
     }
     
-    public void loadConfig(XMLConfiguration config) {
-        loadModules(config);
-        loadConnectionServices(config);
-    }
-    
-    private void loadConnectionServices(XMLConfiguration config) {
-        List<HierarchicalConfiguration> connectionConfigList = config.configurationsAt(CONFIG_CONNECTION);
+    private void loadConnectionServices(List<HierarchicalConfiguration> connectionConfigList) {
         for (HierarchicalConfiguration connectionConfig : connectionConfigList) {
             IConnectionService connectionService;
             IConnection connection;
@@ -90,8 +95,7 @@ public class SmartHomeApp {
         return modulesList;
     }
     
-    private void loadModules(XMLConfiguration config) {
-        List<HierarchicalConfiguration> moduleConfigList = config.configurationsAt(CONFIG_MODULE);
+    private void loadModules(List<HierarchicalConfiguration> moduleConfigList) {
         for (HierarchicalConfiguration moduleConfig : moduleConfigList) {
             Module module = new Module();
             module.config(moduleConfig);
