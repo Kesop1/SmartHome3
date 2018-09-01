@@ -1,14 +1,11 @@
 package com.piotrak.elements;
 
 import com.piotrak.IElement;
-import com.piotrak.contract.connectivity.ActorsService;
-import com.piotrak.contract.connectivity.ICommand;
 import com.piotrak.contract.modularity.modules.Module;
 import com.piotrak.impl.connectivity.visibility.VisibilityCommand;
+import com.piotrak.impl.modularity.rules.Rules;
 import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
-
-import java.util.List;
 
 public class SwitchElement implements IElement {
     
@@ -18,14 +15,15 @@ public class SwitchElement implements IElement {
     
     private Node node;
     
-    private ActorsService actorsService;
+    private Rules rules;
     
-    public SwitchElement(Module module, String title, String icon, int x, int y) {
+    public SwitchElement(Module module, String title, String icon, int x, int y, Rules rules) {
         this.module = module;
         this.icon = icon;
         this.node = new ToggleButton(title);
         node.setLayoutX(x);
         node.setLayoutY(y);
+        this.rules = rules;
     }
     
     @Override
@@ -53,11 +51,6 @@ public class SwitchElement implements IElement {
         return node;
     }
     
-    @Override
-    public void setActorsService(ActorsService actorsService) {
-        this.actorsService = actorsService;
-    }
-    
     public Module getModule() {
         return module;
     }
@@ -65,9 +58,7 @@ public class SwitchElement implements IElement {
     @Override
     public void onClick() {
         String command = ((ToggleButton) node).isSelected() ? "ON" : "OFF";
-        List<ICommand> newCommands = module.getRules().onButtonClick(new VisibilityCommand(command, 0), module);
-        if (!newCommands.isEmpty()) {
-            newCommands.forEach(c -> actorsService.commandReceived(c));
-        }
+        VisibilityCommand visibilityCommand = new VisibilityCommand(command, 0, module);
+        rules.act(visibilityCommand);
     }
 }

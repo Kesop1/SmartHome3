@@ -2,7 +2,6 @@ package com.piotrak.elements;
 
 import com.piotrak.IElement;
 import com.piotrak.Screen;
-import com.piotrak.contract.connectivity.ActorsService;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 
@@ -45,11 +44,6 @@ public class ScreenElelement implements IElement {
     
     public Screen getScreen() {
         return screen;
-    }
-    
-    @Override
-    public void setActorsService(ActorsService actorsService) {
-        //not needed
     }
     
     @Override

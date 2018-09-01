@@ -1,10 +1,10 @@
 package com.piotrak;
 
-import com.piotrak.contract.connectivity.ActorsService;
 import com.piotrak.contract.connectivity.IConnectionService;
 import com.piotrak.contract.modularity.modules.Module;
 import com.piotrak.elements.ScreenElelement;
 import com.piotrak.elements.SwitchElement;
+import com.piotrak.impl.modularity.rules.Rules;
 import com.piotrak.impl.types.ConnectivityType;
 import com.sun.javafx.application.PlatformImpl;
 import javafx.application.Application;
@@ -32,15 +32,16 @@ public class VisibilityApp extends Application {
     
     private List<Module> allModulesList;
     
-    private ActorsService actorsService;
+    private Rules rules;
     
     public VisibilityApp() {
         PlatformImpl.startup(() -> {
         });
     }
     
-    public void config(List<HierarchicalConfiguration> screenConfigList, List<Module> allModulesList) {
+    public void config(List<HierarchicalConfiguration> screenConfigList, List<Module> allModulesList, Rules rules) {
         this.allModulesList = allModulesList;
+        this.rules = rules;
         for (HierarchicalConfiguration screenConfig : screenConfigList) {
             Screen screen = createScreen(screenConfig);
             screenHashMap.put(screen.getName(), screen);
@@ -109,7 +110,7 @@ public class VisibilityApp extends Application {
             if (module == null) {
                 LOGGER.error("Invalid switch module provided: " + name + "!!!!");
             } else {
-                element = new SwitchElement(module, module.getDisplayName(), module.getIcon(), x, y);
+                element = new SwitchElement(module, module.getDisplayName(), module.getIcon(), x, y, rules);
             }
         } else if (elementConfig.getString("screen") != null) {
             String name = elementConfig.getString("screen");
@@ -121,13 +122,7 @@ public class VisibilityApp extends Application {
             }
             element = new ScreenElelement(screen, x, y);
         }
-        if (element != null) {
-            element.setActorsService(actorsService);
-        }
         return element;
     }
     
-    public void setActorsService(ActorsService actorsService) {
-        this.actorsService = actorsService;
-    }
 }

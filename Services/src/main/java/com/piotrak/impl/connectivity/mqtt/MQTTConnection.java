@@ -1,8 +1,8 @@
 package com.piotrak.impl.connectivity.mqtt;
 
-import com.piotrak.contract.connectivity.ActorsService;
 import com.piotrak.contract.connectivity.ICommand;
 import com.piotrak.contract.connectivity.IConnection;
+import com.piotrak.impl.modularity.rules.Rules;
 import com.piotrak.impl.types.ConnectivityType;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.log4j.Logger;
@@ -22,6 +22,8 @@ public class MQTTConnection implements IConnection {
     private MqttClient mqttClient;
     private String uri = "";
     
+    private Rules rules;
+    
     @Override
     public void config(HierarchicalConfiguration config) {
         host = config.getString("host") == null ? "0.0.0.0" : config.getString("host");
@@ -31,10 +33,10 @@ public class MQTTConnection implements IConnection {
     }
     
     @Override
-    public void connect(ActorsService actorsService) {
+    public void connect() {
         try {
             mqttClient = new MqttClient(uri, MqttClient.generateClientId(), new MemoryPersistence());
-            setCallback(actorsService);
+            setCallback();
             mqttClient.connect();
             LOGGER.info("MQTT connection established");
         } catch (MqttException e) {
@@ -74,7 +76,7 @@ public class MQTTConnection implements IConnection {
         }
     }
     
-    private void setCallback(ActorsService actorsService) {
+    private void setCallback() {
         if (mqttClient != null) {
             mqttClient.setCallback(new MqttCallback() {
     
@@ -88,7 +90,7 @@ public class MQTTConnection implements IConnection {
                     String message = new String(mqttMessage.getPayload());
                     LOGGER.info("Message received in topic " + s + ": " + message);
                     MQTTCommand command = new MQTTCommand(s, message);
-                    actorsService.commandReceived(command);
+                    rules.act(command);
                 }
                 
                 @Override
@@ -97,6 +99,10 @@ public class MQTTConnection implements IConnection {
                 }
             });
         }
+    }
+    
+    public void setRules(Rules rules) {
+        this.rules = rules;
     }
     
     public String getHost() {

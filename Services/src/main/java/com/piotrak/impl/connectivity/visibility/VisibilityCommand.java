@@ -1,6 +1,7 @@
 package com.piotrak.impl.connectivity.visibility;
 
 import com.piotrak.contract.connectivity.ICommand;
+import com.piotrak.contract.modularity.modules.Module;
 import com.piotrak.impl.types.ConnectivityType;
 
 public class VisibilityCommand implements ICommand {
@@ -11,9 +12,12 @@ public class VisibilityCommand implements ICommand {
     
     private int commandValue;
     
-    public VisibilityCommand(String commandText, int commandValue) {
+    private Module module;
+    
+    public VisibilityCommand(String commandText, int commandValue, Module module) {
         this.commandText = commandText;
         this.commandValue = commandValue;
+        this.module = module;
     }
     
     public String getCommandText() {
@@ -22,6 +26,10 @@ public class VisibilityCommand implements ICommand {
     
     public int getCommandValue() {
         return commandValue;
+    }
+    
+    public Module getModule() {
+        return module;
     }
     
     @Override

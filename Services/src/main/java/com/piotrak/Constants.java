@@ -2,8 +2,6 @@ package com.piotrak;
 
 public class Constants {
     
-    public static final String RULES = "Rules";
-    
     public static final String MQTT = "MQTT";
     
     public static final String MQTT_TOPIC_SUBSCRIBE = "topic-subscribe";

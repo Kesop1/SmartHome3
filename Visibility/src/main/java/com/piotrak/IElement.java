@@ -1,6 +1,5 @@
 package com.piotrak;
 
-import com.piotrak.contract.connectivity.ActorsService;
 import javafx.scene.Node;
 
 public interface IElement {
@@ -16,7 +15,5 @@ public interface IElement {
     void onClick();
     
     Node getNode();
-    
-    void setActorsService(ActorsService actorsService);
     
 }

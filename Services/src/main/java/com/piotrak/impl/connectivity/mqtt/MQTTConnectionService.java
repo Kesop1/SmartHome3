@@ -1,7 +1,6 @@
 package com.piotrak.impl.connectivity.mqtt;
 
 import com.piotrak.Constants;
-import com.piotrak.contract.connectivity.ActorsService;
 import com.piotrak.contract.connectivity.ICommand;
 import com.piotrak.contract.connectivity.IConnection;
 import com.piotrak.contract.connectivity.IConnectionService;
@@ -27,10 +26,8 @@ public class MQTTConnectionService implements IConnectionService {
     
     private Map<String, List<Module>> topicsMap = new HashMap<>(1);
     
-    private ActorsService actorsService = null;
-    
     @Override
-    public void config(List<Module> modules, IConnection connection, ActorsService actorsService) {
+    public void config(List<Module> modules, IConnection connection) {
         if (!(connection instanceof MQTTConnection)) {
             LOGGER.error("Invalid connection provided for the MQTTConnectionService");
             return;
@@ -38,13 +35,12 @@ public class MQTTConnectionService implements IConnectionService {
         this.modulesList = modules;
         this.connection = (MQTTConnection) connection;
         loadTopics();
-        this.actorsService = actorsService;
     }
     
     @Override
     public void startService() {
         if (connection != null) {
-            connection.connect(actorsService);
+            connection.connect();
             topicsMap.keySet().forEach(topic -> {
                 try {
                     connection.getMqttClient().subscribe(topic);
@@ -80,11 +76,6 @@ public class MQTTConnectionService implements IConnectionService {
     @Override
     public List<Module> getModulesList() {
         return new ArrayList<>(modulesList);
-    }
-    
-    @Override
-    public ActorsService getActorsService() {
-        return actorsService;
     }
     
     public Map<String, List<Module>> getTopicsMap() {

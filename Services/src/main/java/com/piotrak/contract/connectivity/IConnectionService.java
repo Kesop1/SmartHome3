@@ -15,9 +15,7 @@ public interface IConnectionService {
     
     void startService();
     
-    void config(List<Module> modules, IConnection connection, ActorsService actorsService);
-    
-    ActorsService getActorsService();
+    void config(List<Module> modules, IConnection connection);
     
     ConnectivityType getConnectivityType();
     

@@ -7,7 +7,7 @@ public interface IConnection {
     
     void config(HierarchicalConfiguration config);
     
-    void connect(ActorsService actorsService);
+    void connect();
     
     boolean isConnected();
     
