@@ -41,6 +41,22 @@ public class Rules {
                 MQTTCommand mqttCommand = new MQTTCommand(visibilityCommand.getModule().getCommunication().getCommunicationMap().get(MQTT_TOPIC_PUBLISH),
                         visibilityCommand.getCommandText());
                 service.getConnection().sendCommand(mqttCommand);
+                if ("Amplituner".equals(visibilityCommand.getModule().getName())) {
+                    Module subwoofer = null;
+                    for (Module module : moduleList) {
+                        if ("Subwoofer".equals(module.getName())) {
+                            subwoofer = module;
+                            break;
+                        }
+                    }
+                    if (subwoofer == null) {
+                        LOGGER.info("Subwoofer module not found for the Amplituner module");
+                        return;
+                    }
+                    MQTTCommand mqttCommandSub = new MQTTCommand(subwoofer.getCommunication().getCommunicationMap().get(MQTT_TOPIC_PUBLISH),
+                            visibilityCommand.getCommandText());
+                    service.getConnection().sendCommand(mqttCommandSub);
+                }
             }
         } catch (ClassCastException cce) {
             LOGGER.debug("Not a VisibilityCommand, will not use ruleMouseClickSwitchElementSendToMQTT");

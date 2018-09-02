@@ -14,12 +14,42 @@
     <modules>
         <module>
             <type>switch</type>
+            <name>Amplituner</name>
+            <icon>amplituner</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/22/status</topic-subscribe>
+                <topic-publish>arduino/22</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>Subwoofer</name>
+            <icon>subwoofer</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/23/status</topic-subscribe>
+                <topic-publish>arduino/23</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>TV</name>
+            <icon>tv</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/IR/status</topic-subscribe>
+                <topic-publish>arduino/IR</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
             <name>Monitor</name>
             <icon>monitor</icon>
             <connection>
                 <type>MQTT</type>
-                <topic-subscribe>czuj</topic-subscribe>
-                <topic-publish>czuj/java</topic-publish>
+                <topic-subscribe>arduino/24/status</topic-subscribe>
+                <topic-publish>arduino/24</topic-publish>
             </connection>
         </module>
         <module>
@@ -29,8 +59,18 @@
             <icon>speakers</icon>
             <connection>
                 <type>MQTT</type>
-                <topic-subscribe>czuj</topic-subscribe>
-                <topic-publish>czuj/java</topic-publish>
+                <topic-subscribe>arduino/25/status</topic-subscribe>
+                <topic-publish>arduino/25</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>Wiatrak</name>
+            <icon>fan</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/26/status</topic-subscribe>
+                <topic-publish>arduino/26</topic-publish>
             </connection>
         </module>
     </modules>
@@ -43,12 +83,21 @@
                 <background>green</background>
                 <elements>
                     <element X="0" Y="0">
-                        <module>Monitor</module>
+                        <module>Amplituner</module>
                     </element>
                     <element X="0" Y="1">
-                        <module>Glosniki</module>
+                        <module>TV</module>
                     </element>
                     <element X="0" Y="2">
+                        <module>Monitor</module>
+                    </element>
+                    <element X="0" Y="3">
+                        <module>Glosniki</module>
+                    </element>
+                    <element X="0" Y="4">
+                        <module>Wiatrak</module>
+                    </element>
+                    <element X="0" Y="5">
                         <screen>Pokoj</screen>
                     </element>
                 </elements>
