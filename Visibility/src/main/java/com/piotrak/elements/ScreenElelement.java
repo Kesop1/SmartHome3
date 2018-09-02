@@ -5,6 +5,8 @@ import com.piotrak.Screen;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 
+import java.io.PrintWriter;
+
 public class ScreenElelement implements IElement {
     
     private Screen screen;
@@ -44,6 +46,11 @@ public class ScreenElelement implements IElement {
     
     public Screen getScreen() {
         return screen;
+    }
+    
+    @Override
+    public void setPrintWriter(PrintWriter out) {
+    
     }
     
     @Override

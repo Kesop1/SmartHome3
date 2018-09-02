@@ -7,9 +7,6 @@ import com.piotrak.impl.types.ModuleType;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Module {
     
     private static final Logger LOGGER = org.apache.log4j.Logger.getLogger(Module.class);
@@ -23,8 +20,6 @@ public class Module {
     private String icon;
     
     private ICommunication communication;
-    
-    private Map<String, Map<String, Integer>> visibility = new HashMap<>(1);
     
     public void config(HierarchicalConfiguration config) {
         name = config.getString("name") == null ? "" : config.getString("name");
@@ -43,10 +38,6 @@ public class Module {
         } else {
             LOGGER.warn("Unable to assign a communication type " + connectionType);
         }
-    }
-    
-    public Map<String, Map<String, Integer>> getVisibility() {
-        return visibility;
     }
     
     public String getName() {
@@ -69,4 +60,13 @@ public class Module {
         return communication;
     }
     
+    @Override
+    public String toString() {
+        return "Module{" +
+                "moduleType=" + moduleType +
+                ", name=" + name +
+                ", displayName=" + displayName +
+                ", icon=" + icon +
+                '}';
+    }
 }

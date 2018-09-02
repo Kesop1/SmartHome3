@@ -2,6 +2,8 @@ package com.piotrak;
 
 import javafx.scene.Node;
 
+import java.io.PrintWriter;
+
 public interface IElement {
     
     String getTitle();
@@ -15,5 +17,7 @@ public interface IElement {
     void onClick();
     
     Node getNode();
+    
+    void setPrintWriter(PrintWriter out);
     
 }

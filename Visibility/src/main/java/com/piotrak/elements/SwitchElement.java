@@ -1,11 +1,11 @@
 package com.piotrak.elements;
 
 import com.piotrak.IElement;
-import com.piotrak.contract.modularity.modules.Module;
-import com.piotrak.impl.connectivity.visibility.VisibilityCommand;
-import com.piotrak.impl.modularity.rules.Rules;
+import com.piotrak.Module;
 import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
+
+import java.io.PrintWriter;
 
 public class SwitchElement implements IElement {
     
@@ -15,15 +15,14 @@ public class SwitchElement implements IElement {
     
     private Node node;
     
-    private Rules rules;
+    private PrintWriter printWriter;
     
-    public SwitchElement(Module module, String title, String icon, int x, int y, Rules rules) {
+    public SwitchElement(Module module, int x, int y) {
         this.module = module;
-        this.icon = icon;
-        this.node = new ToggleButton(title);
+        this.icon = module.getIcon();
+        this.node = new ToggleButton(module.getDisplayName());
         node.setLayoutX(x);
         node.setLayoutY(y);
-        this.rules = rules;
     }
     
     @Override
@@ -56,9 +55,15 @@ public class SwitchElement implements IElement {
     }
     
     @Override
+    public void setPrintWriter(PrintWriter out) {
+        printWriter = out;
+    }
+    
+    @Override
     public void onClick() {
         String command = ((ToggleButton) node).isSelected() ? "ON" : "OFF";
-        VisibilityCommand visibilityCommand = new VisibilityCommand(command, 0, module);
-        rules.act(visibilityCommand);
+        //send command to the server
+        printWriter.println("Module=" + module.getName() + ", commandText=" + command + ", commandValue=" + 0);
+        printWriter.flush();
     }
 }
