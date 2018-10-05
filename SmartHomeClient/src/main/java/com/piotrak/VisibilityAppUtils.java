@@ -1,11 +1,10 @@
 package com.piotrak;
 
-import com.piotrak.elements.ScreenElelement;
+import com.piotrak.elements.ScreenElement;
 import com.piotrak.elements.SwitchElement;
 import com.piotrak.modularity.ClientModule;
 import com.piotrak.types.ModuleType;
 import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -27,43 +26,52 @@ public class VisibilityAppUtils {
     
     private static final String DEFAULT_SCREEN_BACKGROUND = "defaultBackground";
     
-    public static Map<String, Screen> configScreensAndElements(HierarchicalConfiguration screenConfigFile, List<ClientModule> moduleList) {
-        List<HierarchicalConfiguration> screenConfigList = screenConfigFile.configurationsAt(CONFIG_SCREEN);
-        Map<String, Screen> screenMap = new HashMap<>(0);
-        for (HierarchicalConfiguration screenConfig : screenConfigList) {
-            Screen screen = createScreenFromConfig(screenConfig, screenMap);
-            List<HierarchicalConfiguration> elementConfigList = screenConfig.configurationsAt(CONFIG_ELEMENT);
-            List<IElement> elementList = createElementListFromScreenConfig(elementConfigList, moduleList, screenMap);
-            screen.getElementList().addAll(elementList);
-            screenMap.put(screen.getName(), screen);
-        }
-        return screenMap;
+    private static List<Element> elementList = new ArrayList<>();
+    
+    private static Map<String, Screen> screenMap = new HashMap<>();
+    
+    private VisibilityAppUtils() {
+        //do not instantiate
     }
     
-    public static Screen createScreenFromConfig(HierarchicalConfiguration screenConfig, Map<String, Screen> screenMap) {
+    public static void createScreens(HierarchicalConfiguration screensConfig) {
+        List<HierarchicalConfiguration> screenConfigList = screensConfig.configurationsAt(CONFIG_SCREEN);
+        for (HierarchicalConfiguration screenConfig : screenConfigList) {
+            Screen screen = createScreen(screenConfig);
+            screenMap.put(screen.getName(), screen);
+            LOGGER.info("Screen loaded: " + screen.getTitle());
+        }
+    }
+    
+    private static Screen createScreen(HierarchicalConfiguration screenConfig) {
         String name = screenConfig.getString("name") == null ? DEFAULT_SCREEN_NAME : screenConfig.getString("name");
         String title = screenConfig.getString("title") == null ? name : screenConfig.getString("title");
         String icon = screenConfig.getString("icon") == null ? DEFAULT_ICON_SCREEN : screenConfig.getString("icon");
         String background = screenConfig.getString("background") == null ? DEFAULT_SCREEN_BACKGROUND : screenConfig.getString("background");
-        
-        if (screenMap.containsKey(name)) {
-            Screen screen = screenMap.get(name);
-            if (screen.getElementList().isEmpty()) {
-                screen.setTitle(title);
-                screen.setIcon(icon);
-                screen.setBackground(background);
-            }
-            return screen;
-        }
         return new Screen(name, title, icon, background, new ArrayList<>(0));
     }
     
-    public static List<IElement> createElementListFromScreenConfig(List<HierarchicalConfiguration> elementConfigList,
-                                                                   List<ClientModule> moduleList, Map<String, Screen> screenMap) {
-        List<IElement> elementList = new ArrayList<>(0);
-        
+    public static void createElements(HierarchicalConfiguration screensConfig) {
+        List<HierarchicalConfiguration> screenConfigList = screensConfig.configurationsAt(CONFIG_SCREEN);
+        for (HierarchicalConfiguration screenConfig : screenConfigList) {
+            String screenName = screenConfig.getString("name");
+            Screen screen = screenMap.get(screenName);
+            if (screen == null) {
+                LOGGER.warn("An error occurred when configuring screen " + screenName);
+                continue;
+            }
+            LOGGER.info("Loading elements for the screen: " + screenName);
+            List<Element> elementList = createElementsForScreen(screenConfig);
+            LOGGER.info("Screen " + screenName + " elements: " + elementList);
+            screen.getElementList().addAll(elementList);
+        }
+    }
+    
+    private static List<Element> createElementsForScreen(HierarchicalConfiguration screenConfig) {
+        List<Element> elementList = new ArrayList<>();
+        List<HierarchicalConfiguration> elementConfigList = screenConfig.configurationsAt(CONFIG_ELEMENT);
         for (HierarchicalConfiguration elementConfig : elementConfigList) {
-            IElement element = creteElementFromScreenConfig(elementConfig, moduleList, screenMap);
+            Element element = createElement(elementConfig);
             if (element != null) {
                 elementList.add(element);
             }
@@ -71,62 +79,41 @@ public class VisibilityAppUtils {
         return elementList;
     }
     
-    public static IElement creteElementFromScreenConfig(HierarchicalConfiguration elementConfig, List<ClientModule> moduleList, Map<String, Screen> screenMap) {
-        IElement element = null;
-        int x = elementConfig.getInt("[@X]");
-        int y = elementConfig.getInt("[@Y]");
-        if (elementConfig.getString("module.[@name]") != null) {
-            ClientModule module = getClientModuleFromConfig(elementConfig, moduleList);
-            if (module == null) {
-                return null;
-            }
+    private static Element createElement(HierarchicalConfiguration config) {
+        Element element = null;
+        int x = config.getInt("[@X]");
+        int y = config.getInt("[@Y]");
+        HierarchicalConfiguration elementConfig;
+        String name;
+        if ((name = config.getString("module.name")) != null) {
+            elementConfig = config.configurationAt("module");
+            searchForExistingElement(name);
+            ClientModule module = new ClientModule(elementConfig);
             if (module.getModuleType() == ModuleType.SWITCH) {
                 element = new SwitchElement(module, x, y);
+                LOGGER.info("Module loaded: " + element.getTitle());
             } else {
                 LOGGER.error("Unknown Module type: " + module.getModuleType().name() + ". Unable to create the screen element");
             }
-        } else if (elementConfig.getString("screen.[@name]") != null) {
-            String name = elementConfig.getString("screen.[@name]");
-            screenMap.computeIfAbsent(name, k -> new Screen(name, "", "", "", new ArrayList<>(0)));
-            /*
+        } else if ((name = config.getString("screen.name")) != null) {
+            searchForExistingElement(name);
             Screen screen = screenMap.get(name);
-            //if child screen is added to the parent before it is even created create a Screen shell object and put it on the map
-            if (screen == null) {
-                screen = new Screen(name, "", "", "", new ArrayList<>(0));
-                screenMap.put(name, screen);
-            }*/
-            element = new ScreenElelement(screenMap.get(name), x, y);
+            element = new ScreenElement(screen, x, y);
+            LOGGER.info("Screen loaded: " + element.getTitle());
+        }
+        if (element != null) {
+            elementList.add(element);
         }
         return element;
     }
     
-    private static ClientModule getClientModuleFromConfig(HierarchicalConfiguration config, List<ClientModule> moduleList) {
-        String name = config.getString("module.[@name]");
-        ClientModule module = null;
-        
-        //check if the module was defined in the server app config
-        for (ClientModule m : moduleList) {
-            if (name.equals(m.getName())) {
-                module = m;
-                break;
+    private static Element searchForExistingElement(String name) {
+        for (Element existingElement : elementList) {
+            if (existingElement.getTitle().equals(name)) {
+                return existingElement;
             }
         }
-        if (module == null) {
-            LOGGER.warn("Module " + name + " was not defined in the server app config file");
-            return null;
-        }
-        
-        String displayName = config.getString("module.displayName");
-        String icon = config.getString("module.icon");
-        if (StringUtils.isNotEmpty(displayName)) {
-            module.setDisplayName(displayName);
-        } else {
-            module.setDisplayName(name);
-        }
-        if (StringUtils.isNotEmpty(icon)) {
-            module.setIcon(icon);
-        }
-        return module;
+        return null;
     }
     
 }

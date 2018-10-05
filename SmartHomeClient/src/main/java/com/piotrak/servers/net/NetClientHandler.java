@@ -56,7 +56,7 @@ public class NetClientHandler implements IClientHandler {
     }
 
 //    @Override
-//    public void runClient() {
+//    public void run() {
 //        NetClientListener listener = new NetClientListener();
 //        Thread thread = new Thread(listener);
 //        thread.start();

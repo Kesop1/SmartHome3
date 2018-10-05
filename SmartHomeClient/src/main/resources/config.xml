@@ -17,33 +17,45 @@
             <background>green</background>
             <elements>
                 <element X="0" Y="0">
-                    <module name="Amplituner">
+                    <module>
+                        <name>Amplituner</name>
                         <icon>amplituner</icon>
+                        <type>switch</type>
                     </module>
                 </element>
                 <element X="0" Y="1">
-                    <module name="TV">
+                    <module>
+                        <name>TV</name>
                         <icon>tv</icon>
+                        <type>switch</type>
                     </module>
                 </element>
                 <element X="0" Y="2">
-                    <module name="Monitor">
+                    <module>
+                        <name>Monitor</name>
                         <icon>monitor</icon>
+                        <type>switch</type>
                     </module>
                 </element>
                 <element X="0" Y="3">
-                    <module name="Glosniki">
+                    <module>
+                        <name>Glosniki</name>
                         <displayName>Głośniki</displayName>
                         <icon>speakers</icon>
+                        <type>switch</type>
                     </module>
                 </element>
                 <element X="0" Y="4">
-                    <module name="Wiatrak">
+                    <module>
+                        <name>Wiatrak</name>
                         <icon>fan</icon>
+                        <type>switch</type>
                     </module>
                 </element>
                 <element X="0" Y="5">
-                    <screen name="Pokoj"></screen>
+                    <screen>
+                        <name>Pokoj</name>
+                    </screen>
                 </element>
             </elements>
         </screen>
@@ -54,7 +66,9 @@
             <background>black</background>
             <elements>
                 <element X="0" Y="1">
-                    <module name="Monitor"></module>
+                    <module>
+                        <name>Monitor</name>
+                    </module>
                 </element>
             </elements>
         </screen>

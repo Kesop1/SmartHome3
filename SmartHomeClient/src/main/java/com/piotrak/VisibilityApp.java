@@ -37,11 +37,11 @@ public class VisibilityApp extends Application {
         launch(args);
     }
     
-    public static void config(HierarchicalConfiguration screenConfig, List<ClientModule> modules, IClientHandler handler) {
+    public static void config(HierarchicalConfiguration screensConfig, IClientHandler handler) {
+        JFXPanel fxPanel = new JFXPanel(); //workaround for JavaFX issue
         clientHandler = handler;
-        moduleList = modules;
-        JFXPanel fxPanel = new JFXPanel();
-        screenHashMap = VisibilityAppUtils.configScreensAndElements(screenConfig, moduleList);
+        VisibilityAppUtils.createScreens(screensConfig);
+        VisibilityAppUtils.createElements(screensConfig);
     }
     
     @Override
@@ -85,10 +85,10 @@ public class VisibilityApp extends Application {
 //        String title = screenConfig.getString("title");
 //        String icon = screenConfig.getString("icon") == null ? "" : screenConfig.getString("icon");
 //        String background = screenConfig.getString("background") == null ? "" : screenConfig.getString("background");
-//        List<IElement> elementList = new ArrayList<>(0);
+//        List<Element> elementList = new ArrayList<>(0);
 //        List<HierarchicalConfiguration> elementConfigList = screenConfig.configurationsAt(CONFIG_ELEMENT);
 //        for (HierarchicalConfiguration elementConfig : elementConfigList) {
-//            IElement element = createElement(elementConfig);
+//            Element element = createElement(elementConfig);
 //            if (element != null) {
 //                elementList.add(element);
 //            }
@@ -106,8 +106,8 @@ public class VisibilityApp extends Application {
 //        return new Screen(name, title, icon, background, elementList);
 //    }
 
-//    private IElement createElement(HierarchicalConfiguration elementConfig) {
-//        IElement element = null;
+//    private Element createElement(HierarchicalConfiguration elementConfig) {
+//        Element element = null;
 //        int x = elementConfig.getInt("[@X]");
 //        int y = elementConfig.getInt("[@Y]");
 //        if (elementConfig.getString("module") != null) {
@@ -139,7 +139,7 @@ public class VisibilityApp extends Application {
 //                screen = new Screen(name, "", "", "", new ArrayList<>(0));
 //                screenHashMap.put(name, screen);
 //            }
-//            element = new ScreenElelement(screen, x, y);
+//            element = new ScreenElement(screen, x, y);
 //        }
 //        return element;
 //    }

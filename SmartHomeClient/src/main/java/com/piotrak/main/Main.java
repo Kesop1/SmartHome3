@@ -14,11 +14,7 @@ public class Main {
             LOGGER.debug("Looking for config file on the classpath");
             XMLConfiguration configFile = new XMLConfiguration(CONFIG_FILE);
             SmartHomeClient smartHomeClient = new SmartHomeClient(configFile);
-            if ((smartHomeClient.getClientHandler()) == null) {
-                System.exit(0);
-            }
-            
-            smartHomeClient.runClient(configFile);
+            smartHomeClient.run();
             
         } catch (ConfigurationException e) {
             LOGGER.error("Problem occurred while reading the config file: " + CONFIG_FILE + "\n", e);

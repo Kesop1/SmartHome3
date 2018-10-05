@@ -3,6 +3,7 @@ package com.piotrak.main;
 import com.piotrak.VisibilityApp;
 import com.piotrak.modularity.ClientModule;
 import com.piotrak.servers.IClientHandler;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 
 import java.util.List;
@@ -18,10 +19,7 @@ public class SmartHomeClient {
     private IClientHandler clientHandler;
     
     public SmartHomeClient(XMLConfiguration configFile) {
-        clientHandler = IClientHandler.createServerHandler(configFile.configurationAt(SERVER));
-        if (clientHandler == null) {
-            System.exit(0);
-        }
+        config(configFile);
         clientHandler.runClient();
         do {
             //wait for config from the server
@@ -29,13 +27,20 @@ public class SmartHomeClient {
         moduleList = clientHandler.getClientModuleList();
     }
     
-    public void runClient(XMLConfiguration configFile) {
-//        clientHandler.runClient();
-        VisibilityApp.config(configFile.configurationAt("screens"), moduleList, clientHandler);
+    public void run() {
         VisibilityApp.runVisibilityApp(null);
     }
     
-    public IClientHandler getClientHandler() {
-        return clientHandler;
+    private void config(XMLConfiguration configFile) {
+        getClientHandler(configFile.configurationAt(SERVER));
+        VisibilityApp.config(configFile.configurationAt("screens"), clientHandler);
     }
+    
+    private void getClientHandler(HierarchicalConfiguration serverConfig) {
+        clientHandler = IClientHandler.createClientHandler(serverConfig);
+        if (clientHandler == null) {
+            System.exit(0);
+        }
+    }
+    
 }

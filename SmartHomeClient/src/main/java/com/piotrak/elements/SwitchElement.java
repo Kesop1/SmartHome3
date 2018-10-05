@@ -1,45 +1,23 @@
 package com.piotrak.elements;
 
-import com.piotrak.IElement;
+import com.piotrak.Element;
 import com.piotrak.modularity.ClientModule;
 import com.piotrak.modularity.Module;
 import javafx.scene.Node;
 import javafx.scene.control.ToggleButton;
 
-public class SwitchElement implements IElement {
+public class SwitchElement extends Element {
     
     private ClientModule module;
-    
-    private String icon;
     
     private Node node;
     
     public SwitchElement(ClientModule module, int x, int y) {
+        super(module.getDisplayName(), module.getIcon(), x, y);
         this.module = module;
-        this.icon = module.getIcon();
         this.node = new ToggleButton(module.getDisplayName());
         node.setLayoutX(x);
         node.setLayoutY(y);
-    }
-    
-    @Override
-    public String getTitle() {
-        return node.getId();
-    }
-    
-    @Override
-    public String getIcon() {
-        return icon;
-    }
-    
-    @Override
-    public int getX() {
-        return (int) node.getLayoutX();
-    }
-    
-    @Override
-    public int getY() {
-        return (int) node.getLayoutY();
     }
     
     @Override
@@ -51,4 +29,8 @@ public class SwitchElement implements IElement {
         return module;
     }
     
+    @Override
+    public String toString() {
+        return "Switch" + super.toString();
+    }
 }

@@ -14,9 +14,9 @@ public class Screen {
     
     private String background;
     
-    private List<IElement> elementList;
+    private List<Element> elementList;
     
-    public Screen(String name, String title, String icon, String background, List<IElement> elementList) {
+    public Screen(String name, String title, String icon, String background, List<Element> elementList) {
         this.name = name;
         this.title = StringUtils.isEmpty(title) ? name : title;
         this.icon = icon;
@@ -56,11 +56,11 @@ public class Screen {
         this.background = background;
     }
     
-    public List<IElement> getElementList() {
+    public List<Element> getElementList() {
         return elementList;
     }
     
-    public void setElementList(List<IElement> elementList) {
+    public void setElementList(List<Element> elementList) {
         this.elementList = elementList;
     }
 }

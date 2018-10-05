@@ -2,6 +2,7 @@ package com.piotrak.modularity;
 
 import com.piotrak.types.ModuleType;
 import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 public abstract class Module {
@@ -14,7 +15,10 @@ public abstract class Module {
     
     public Module(HierarchicalConfiguration config) {
         name = config.getString("name") == null ? "" : config.getString("name");
-        moduleType = ModuleType.valueOf(config.getString("type").toUpperCase());
+        String type = config.getString("type");
+        if (StringUtils.isNotEmpty(type)) {
+            moduleType = ModuleType.valueOf(type.toUpperCase());
+        }
     }
     
     public Module(ModuleType moduleType, String name) {

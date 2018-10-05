@@ -13,7 +13,7 @@ public interface IClientHandler {
     
     Logger LOGGER = Logger.getLogger(IClientHandler.class);
     
-    static IClientHandler createServerHandler(HierarchicalConfiguration serverConfig) {
+    static IClientHandler createClientHandler(HierarchicalConfiguration serverConfig) {
         IClientHandler clientHandler = null;
         ServerType serverType = Enum.valueOf(ServerType.class, serverConfig.getString("type").toUpperCase());
         if (serverType == ServerType.NET) {
@@ -30,7 +30,7 @@ public interface IClientHandler {
     
     boolean runClient();
 
-//    void runClient();
+//    void run();
     
     ServerType getServerType();
     
