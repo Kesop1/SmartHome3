@@ -47,9 +47,9 @@
 
     <modules>
         <module>TechnologyTest</module>
-        <module>Services</module>
+        <module>SmartHomeServer</module>
         <module>SmartHomeApp</module>
-        <module>Visibility</module>
+        <module>SmartHomeClient</module>
     </modules>
 
     <repositories>

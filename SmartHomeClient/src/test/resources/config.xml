@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--TODO: zrobić XSD
+-->
+<config>
+    <setup>
+        <server>
+            <host>10.0.2.15</host>
+            <port>1024</port>
+        </server>
+    </setup>
+
+    <visibility>
+        <screens>
+            <screen>
+                <name>Main</name>
+                <icon>home</icon>
+                <background>green</background>
+                <elements>
+                    <element X="0" Y="0">
+                        <module>Amplituner</module>
+                    </element>
+                    <element X="0" Y="1">
+                        <module>TV</module>
+                    </element>
+                    <element X="0" Y="2">
+                        <module>Monitor</module>
+                    </element>
+                    <element X="0" Y="3">
+                        <module>Glosniki</module>
+                    </element>
+                    <element X="0" Y="4">
+                        <module>Wiatrak</module>
+                    </element>
+                    <element X="0" Y="5">
+                        <screen>Pokoj</screen>
+                    </element>
+                </elements>
+            </screen>
+            <screen>
+                <name>Pokoj</name>
+                <title>Pokój</title>
+                <icon>living_room</icon>
+                <background>black</background>
+                <elements>
+                    <element X="0" Y="1">
+                        <module>Monitor</module>
+                    </element>
+                </elements>
+            </screen>
+        </screens>
+    </visibility>
+</config>

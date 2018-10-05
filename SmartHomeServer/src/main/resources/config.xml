@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--TODO: zrobić XSD
+-->
+<config>
+
+    <server>
+        <type>Net</type>
+        <port>1024</port>
+    </server>
+
+    <connections>
+        <connection>
+            <type>MQTT</type>
+            <host>192.168.1.103</host>
+            <port>1883</port>
+            <protocol>tcp</protocol>
+        </connection>
+    </connections>
+
+    <modules>
+        <module>
+            <type>switch</type>
+            <name>Amplituner</name>
+            <icon>amplituner</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/22/status</topic-subscribe>
+                <topic-publish>arduino/22</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>Subwoofer</name>
+            <icon>subwoofer</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/23/status</topic-subscribe>
+                <topic-publish>arduino/23</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>TV</name>
+            <icon>tv</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/IR/status</topic-subscribe>
+                <topic-publish>arduino/IR</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>Monitor</name>
+            <icon>monitor</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/24/status</topic-subscribe>
+                <topic-publish>arduino/24</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>Glosniki</name>
+            <displayName>Głośniki</displayName>
+            <icon>speakers</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/25/status</topic-subscribe>
+                <topic-publish>arduino/25</topic-publish>
+            </connection>
+        </module>
+        <module>
+            <type>switch</type>
+            <name>Wiatrak</name>
+            <icon>fan</icon>
+            <connection>
+                <type>MQTT</type>
+                <topic-subscribe>arduino/26/status</topic-subscribe>
+                <topic-publish>arduino/26</topic-publish>
+            </connection>
+        </module>
+    </modules>
+
+</config>
