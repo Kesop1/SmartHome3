@@ -51,4 +51,9 @@ public class NetServerMessage extends ServerMessage {
     public Module getModule() {
         return module;
     }
+    
+    @Override
+    public String toString() {
+        return "Net" + super.toString();
+    }
 }

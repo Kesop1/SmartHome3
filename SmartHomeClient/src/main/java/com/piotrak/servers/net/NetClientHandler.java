@@ -1,7 +1,6 @@
 package com.piotrak.servers.net;
 
 import com.piotrak.modularity.ClientModule;
-import com.piotrak.modularity.ClientModuleUtils;
 import com.piotrak.servers.IClientHandler;
 import com.piotrak.servers.ServerMessage;
 import com.piotrak.types.ServerType;
@@ -16,8 +15,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.piotrak.servers.ServerCnsts.CLIENT_CONFIG_READY;
-import static com.piotrak.servers.ServerCnsts.SERVER_CONFIG;
+import static com.piotrak.servers.ServerCnsts.*;
 
 public class NetClientHandler implements IClientHandler {
     
@@ -35,7 +33,7 @@ public class NetClientHandler implements IClientHandler {
     
     private NetClientListener listener;
     
-    private List<ClientModule> moduleList = new ArrayList<>(0);
+    private List<ClientModule> serverModuleList = new ArrayList<>(0);
     
     public NetClientHandler(String host, int port, String name) {
         this.host = host;
@@ -49,19 +47,11 @@ public class NetClientHandler implements IClientHandler {
             connectToServer();
         }
         while (client.getSocket() == null);
-        NetClientListener listener = new NetClientListener(client.getSocket());
+        listener = new NetClientListener(client.getSocket());
         Thread thread = new Thread(listener);
         thread.start();
         return true;
     }
-
-//    @Override
-//    public void run() {
-//        NetClientListener listener = new NetClientListener();
-//        Thread thread = new Thread(listener);
-//        thread.start();
-//        run();
-//    }
     
     @Override
     public ServerType getServerType() {
@@ -91,41 +81,8 @@ public class NetClientHandler implements IClientHandler {
     }
     
     public List<ClientModule> getClientModuleList() {
-        return moduleList;
+        return serverModuleList;
     }
-
-//    private void run(){
-//        try {
-//            getInitialConfig();
-//            do {
-//                String message = in.readLine();
-//                LOGGER.info("Message received from server: " + message);
-//                if (message != null) {
-//                    if (message.contains(SERVER_CONFIG)) {
-//                        moduleList.addAll(ClientModuleUtils.getClientModuleListFromServer(message));
-//                        if(!moduleList.isEmpty()){
-//                            configReceived = true;
-//                        }
-//                    } else{
-//                        //different type of message from the server
-//                    }
-//                }
-//            }
-//            while (true);
-//        } catch (IOException e) {
-//            LOGGER.warn("Error occurred while running the socket", e);
-//        } finally {
-//            try {
-//                if(client.getSocket() != null) {
-//                    client.getSocket().close();
-//                    in.close();
-//                    out.close();
-//                }
-//            } catch (IOException e) {
-//                LOGGER.warn("Error occurred while closing the socket", e);
-//            }
-//        }
-//    }
     
     private class NetClientListener implements Runnable {
         
@@ -148,15 +105,13 @@ public class NetClientHandler implements IClientHandler {
         @Override
         public void run() {
             try {
+                sendInitialConfig();
                 getInitialConfig();
                 do {
                     String message = getMessage();
                     if (!message.isEmpty()) {
                         if (message.contains(SERVER_CONFIG)) {
-                            moduleList.addAll(ClientModuleUtils.getClientModuleListFromServer(message));
-                            if (!moduleList.isEmpty()) {
-                                configReceived = true;
-                            }
+                            configReceived = true;
                         } else {
                             //different type of message from the server
                         }
@@ -176,11 +131,10 @@ public class NetClientHandler implements IClientHandler {
                     LOGGER.warn("Error occurred while closing the socket", e);
                 }
             }
-            
         }
         
         public void sendMessage(NetServerMessage message) {
-            LOGGER.info("Sending out a " + message.getClass().getName() + ": " + message.getMessageContent() + " to " +
+            LOGGER.info("Sending out a " + message + ": " + message.getMessageContent() + " to " +
                     socket.getLocalAddress());
             out.println(message.getMessageContent());
             out.flush();
@@ -201,6 +155,10 @@ public class NetClientHandler implements IClientHandler {
         
         private void getInitialConfig() {
             sendMessage(new NetServerMessage(CLIENT_CONFIG_READY));
+        }
+    
+        private void sendInitialConfig() {
+            sendMessage(new NetServerMessage(CLIENT_CONFIG + "Name=" + client.getName() + " " + CLIENT_CONFIG_END));
         }
     }
     

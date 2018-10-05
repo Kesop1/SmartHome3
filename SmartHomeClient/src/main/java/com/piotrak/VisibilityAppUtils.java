@@ -87,7 +87,9 @@ public class VisibilityAppUtils {
         String name;
         if ((name = config.getString("module.name")) != null) {
             elementConfig = config.configurationAt("module");
-            searchForExistingElement(name);
+            if ((element = searchForExistingElement(name)) != null) {
+                return element;
+            }
             ClientModule module = new ClientModule(elementConfig);
             if (module.getModuleType() == ModuleType.SWITCH) {
                 element = new SwitchElement(module, x, y);
@@ -96,7 +98,9 @@ public class VisibilityAppUtils {
                 LOGGER.error("Unknown Module type: " + module.getModuleType().name() + ". Unable to create the screen element");
             }
         } else if ((name = config.getString("screen.name")) != null) {
-            searchForExistingElement(name);
+            if ((element = searchForExistingElement(name)) != null) {
+                return element;
+            }
             Screen screen = screenMap.get(name);
             element = new ScreenElement(screen, x, y);
             LOGGER.info("Screen loaded: " + element.getTitle());
@@ -116,4 +120,7 @@ public class VisibilityAppUtils {
         return null;
     }
     
+    public static Map<String, Screen> getScreenMap() {
+        return screenMap;
+    }
 }

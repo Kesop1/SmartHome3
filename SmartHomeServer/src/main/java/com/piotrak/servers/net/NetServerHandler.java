@@ -112,11 +112,7 @@ public class NetServerHandler implements IServerHandler {
         }
         
         private void sendInitialConfig() {
-            StringBuilder sb = new StringBuilder(0);
-            sb.append(SERVER_CONFIG);
-            sb.append(ServerModuleUtils.getModuleListAsString(rules.getModuleList()));
-            sb.append(" ").append(SERVER_CONFIG_END);
-            sendMessage(new NetServerMessage(sb.toString()));
+            //no config to be sent for now
         }
         
         public void redistributeMessage(NetServerMessage message) {
@@ -128,6 +124,14 @@ public class NetServerHandler implements IServerHandler {
                     listener.sendMessage(message);
                 }
             }
+        }
+    
+        public void sendModulesList() {
+            StringBuilder sb = new StringBuilder(0);
+            sb.append(SERVER_CONFIG);
+            sb.append(ServerModuleUtils.getModuleListAsString(rules.getModuleList()));
+            sb.append(" ").append(SERVER_CONFIG_END);
+            sendMessage(new NetServerMessage(sb.toString()));
         }
         
         public void sendMessage(NetServerMessage message) {
@@ -144,7 +148,7 @@ public class NetServerHandler implements IServerHandler {
                 do {
                     clientMessage = getMessage();
                     if (!StringUtils.isEmpty(clientMessage)) {
-                        LOGGER.info("Message received from client " + client.getName() + ": " + clientMessage);
+                        LOGGER.info("Message received from the client " + client.getName() + ": " + clientMessage);
                         if (clientMessage.contains(CLIENT_CONFIG_READY)) {
                             sendInitialConfig();
                         } else if (clientMessage.contains(CLIENT_CONFIG)) {
@@ -161,18 +165,19 @@ public class NetServerHandler implements IServerHandler {
         }
         
         private String getMessage() throws SocketException {
+            String message = "";
             try {
-                return in.readLine();
+                message = in.readLine();
             } catch (SocketException e) {
                 throw e;
             } catch (IOException e) {
                 LOGGER.error("Error while getting message from the client: " + client.getName(), e);
             }
-            return "";
+            return message;
         }
         
         private void getClientConfig(String message) {
-            String clientName = message.substring(message.indexOf("Name=") + 5);
+            String clientName = message.substring(message.indexOf("Name=") + 5, message.indexOf(CLIENT_CONFIG_END));
             if (StringUtils.isNotEmpty(clientName)) {
                 client.setName(clientName);
             }
