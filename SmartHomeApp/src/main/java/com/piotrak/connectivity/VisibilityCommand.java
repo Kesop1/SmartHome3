@@ -3,6 +3,8 @@ package com.piotrak.connectivity;
 import com.piotrak.modularity.Module;
 import com.piotrak.types.ConnectivityType;
 
+import static com.piotrak.servers.ServerCnsts.VISIBILITY_CMD;
+
 public class VisibilityCommand extends Command {
     
     private ConnectivityType connectivityType = ConnectivityType.VISIBILITY;
@@ -38,7 +40,7 @@ public class VisibilityCommand extends Command {
     
     @Override
     public String toString() {
-        return this.getClass().getName() + ": module=" + module.getName() + ", commandText=" + commandText +
+        return VISIBILITY_CMD + "module=" + module.getName() + ", commandText=" + commandText +
                 ", commandValue=" + commandValue;
     }
 }

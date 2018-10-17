@@ -4,6 +4,7 @@ import com.piotrak.modularity.ClientModule;
 import com.piotrak.servers.IClientHandler;
 import com.piotrak.servers.ServerMessage;
 import com.piotrak.types.ServerType;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -65,6 +66,7 @@ public class NetClientHandler implements IClientHandler {
     
     @Override
     public void sendMessage(ServerMessage message) {
+        IClientHandler.super.sendMessage(message);
         listener.sendMessage((NetServerMessage) message);
     }
     
@@ -82,6 +84,16 @@ public class NetClientHandler implements IClientHandler {
     
     public List<ClientModule> getClientModuleList() {
         return serverModuleList;
+    }
+    
+    @Override
+    public void requestInitialConfig() {
+        sendMessage(new NetServerMessage(CLIENT_CONFIG_READY));
+    }
+    
+    @Override
+    public void sendInitialConfig() {
+        sendMessage(new NetServerMessage(CLIENT_CONFIG + "Name=" + client.getName() + " " + CLIENT_CONFIG_END));
     }
     
     private class NetClientListener implements Runnable {
@@ -106,11 +118,12 @@ public class NetClientHandler implements IClientHandler {
         public void run() {
             try {
                 sendInitialConfig();
-                getInitialConfig();
+                requestInitialConfig();
                 do {
-                    String message = getMessage();
-                    if (!message.isEmpty()) {
-                        if (message.contains(SERVER_CONFIG)) {
+                    NetServerMessage message = getMessage();
+                    if (message != null) {
+                        String content = message.getMessageContent();
+                        if (content.startsWith(SERVER_CONFIG)) {
                             configReceived = true;
                         } else {
                             //different type of message from the server
@@ -134,13 +147,12 @@ public class NetClientHandler implements IClientHandler {
         }
         
         public void sendMessage(NetServerMessage message) {
-            LOGGER.info("Sending out a " + message + ": " + message.getMessageContent() + " to " +
-                    socket.getLocalAddress());
             out.println(message.getMessageContent());
             out.flush();
         }
-        
-        private String getMessage() throws SocketException {
+    
+        private NetServerMessage getMessage() throws SocketException {
+            NetServerMessage netServerMessage = null;
             String message = "";
             try {
                 message = in.readLine();
@@ -150,16 +162,12 @@ public class NetClientHandler implements IClientHandler {
             } catch (IOException e) {
                 LOGGER.error("Error while getting message from the server", e);
             }
-            return message;
+            if (!StringUtils.isEmpty(message)) {
+                netServerMessage = new NetServerMessage(message);
+            }
+            return netServerMessage;
         }
         
-        private void getInitialConfig() {
-            sendMessage(new NetServerMessage(CLIENT_CONFIG_READY));
-        }
-    
-        private void sendInitialConfig() {
-            sendMessage(new NetServerMessage(CLIENT_CONFIG + "Name=" + client.getName() + " " + CLIENT_CONFIG_END));
-        }
     }
     
 }

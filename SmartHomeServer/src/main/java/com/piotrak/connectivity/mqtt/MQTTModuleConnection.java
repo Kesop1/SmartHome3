@@ -88,14 +88,14 @@ public class MQTTModuleConnection implements IModuleConnection {
                 @Override
                 public void messageArrived(String s, MqttMessage mqttMessage) {
                     String message = new String(mqttMessage.getPayload());
-                    LOGGER.info("Message received in topic " + s + ": " + message);
+                    LOGGER.info("MQTTMessage received in topic " + s + ": " + message);
                     MQTTCommand command = new MQTTCommand(s, message);
                     rules.act(command);
                 }
                 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-                    LOGGER.info("Message successfully sent");
+                    LOGGER.info("MQTTMessage successfully sent");
                 }
             });
         }

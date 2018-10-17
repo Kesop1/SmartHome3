@@ -1,6 +1,7 @@
 package com.piotrak.servers.net;
 
 import com.piotrak.modularity.Module;
+import com.piotrak.servers.Client;
 import com.piotrak.servers.ServerMessage;
 import com.piotrak.types.ServerType;
 
@@ -18,6 +19,13 @@ public class NetServerMessage extends ServerMessage {
     public NetServerMessage(String messageContent) {
         this.messageContent = messageContent;
         setClientList(new ArrayList<>(0));
+    }
+    
+    public NetServerMessage(String messageContent, Client client) {
+        this.messageContent = messageContent;
+        List<String> clientList = new ArrayList<>(1);
+        clientList.add(client.getName());
+        setClientList(clientList);
     }
     
     public NetServerMessage(String messageContent, List<String> clientList) {

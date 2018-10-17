@@ -4,6 +4,7 @@ import com.piotrak.connectivity.VisibilityCommand;
 import com.piotrak.modularity.modules.ServerModule;
 import com.piotrak.modularity.modules.ServerModuleUtils;
 import com.piotrak.rules.Rules;
+import com.piotrak.servers.Client;
 import com.piotrak.servers.IServerHandler;
 import com.piotrak.servers.ServerMessage;
 import com.piotrak.types.ServerType;
@@ -36,6 +37,8 @@ public class NetServerHandler implements IServerHandler {
     private List<NetServerListener> serverListenerList = new ArrayList<>(0);
     
     private int serverPort;
+    
+    private List<Client> connectedClients = new ArrayList<>();
     
     public NetServerHandler(int serverPort) {
         this.serverPort = serverPort;
@@ -78,19 +81,27 @@ public class NetServerHandler implements IServerHandler {
     }
     
     @Override
-    public void sendMessage(ServerMessage message) {
-        if (ServerType.NET != message.getServerType()) {
-            LOGGER.warn("Unable to send the message " + message.getMessageContent() + " from a " + this.getClass().getName());
-            return;
-        }
-        if (!serverListenerList.isEmpty()) {
-            serverListenerList.get(0).sendMessage((NetServerMessage) message);
+    public List<Client> getConnectedClients() {
+        return connectedClients;
+    }
+    
+    @Override
+    public void sendMessageToClient(ServerMessage message, Client client) {
+        for (NetServerListener listener : serverListenerList) {
+            if (listener.getClient() == client) {
+                listener.sendMessage((NetServerMessage) message);
+            }
         }
     }
     
     @Override
     public ServerType getServerType() {
         return serverType;
+    }
+    
+    @Override
+    public void setUpClient(Client client) {
+        sendMessage(new NetServerMessage(SERVER_CONFIG + SERVER_CONFIG_END, client));
     }
     
     private class NetServerListener implements Runnable {
@@ -103,6 +114,7 @@ public class NetServerHandler implements IServerHandler {
         
         private NetServerListener(NetClient client) {
             this.client = client;
+            connectedClients.add(client);//TODO: czemu to nie jest NetClient?
             try {
                 in = new BufferedReader(new InputStreamReader(client.getSocket().getInputStream()));
                 out = new PrintWriter(client.getSocket().getOutputStream(), true);
@@ -112,7 +124,7 @@ public class NetServerHandler implements IServerHandler {
         }
         
         private void sendInitialConfig() {
-            //no config to be sent for now
+            setUpClient(client);
         }
         
         public void redistributeMessage(NetServerMessage message) {
@@ -135,25 +147,24 @@ public class NetServerHandler implements IServerHandler {
         }
         
         public void sendMessage(NetServerMessage message) {
-            LOGGER.info("Sending out a " + message.getClass().getName() + ": " + message.getMessageContent() + " to " +
-                    client.getName());
             out.println(message.getMessageContent());
             out.flush();
         }
         
         @Override
         public void run() {
-            String clientMessage;
+            NetServerMessage clientMessage;
             try {
                 do {
                     clientMessage = getMessage();
-                    if (!StringUtils.isEmpty(clientMessage)) {
-                        LOGGER.info("Message received from the client " + client.getName() + ": " + clientMessage);
-                        if (clientMessage.contains(CLIENT_CONFIG_READY)) {
+                    if (clientMessage != null) {
+                        String content = clientMessage.getMessageContent();
+                        LOGGER.info(clientMessage.getClass().getSimpleName() + " received from the client " + client.getName() + ": " + content);
+                        if (content.startsWith(CLIENT_CONFIG_READY)) {
                             sendInitialConfig();
-                        } else if (clientMessage.contains(CLIENT_CONFIG)) {
+                        } else if (content.startsWith(CLIENT_CONFIG)) {
                             getClientConfig(clientMessage);
-                        } else if (clientMessage.contains(VISIBILITY_CMD)) {
+                        } else if (content.startsWith(VISIBILITY_CMD)) {
                             visibilityMessageReceived(clientMessage);
                         }
                     }
@@ -163,8 +174,9 @@ public class NetServerHandler implements IServerHandler {
                 closeListener();
             }
         }
-        
-        private String getMessage() throws SocketException {
+    
+        private NetServerMessage getMessage() throws SocketException {
+            NetServerMessage netServerMessage = null;
             String message = "";
             try {
                 message = in.readLine();
@@ -173,20 +185,25 @@ public class NetServerHandler implements IServerHandler {
             } catch (IOException e) {
                 LOGGER.error("Error while getting message from the client: " + client.getName(), e);
             }
-            return message;
+            if (!StringUtils.isEmpty(message)) {
+                netServerMessage = new NetServerMessage(message);
+            }
+            return netServerMessage;
         }
-        
-        private void getClientConfig(String message) {
-            String clientName = message.substring(message.indexOf("Name=") + 5, message.indexOf(CLIENT_CONFIG_END));
+    
+        private void getClientConfig(NetServerMessage message) {
+            String content = message.getMessageContent();
+            String clientName = content.substring(content.indexOf("Name=") + 5, content.indexOf(CLIENT_CONFIG_END));
             if (StringUtils.isNotEmpty(clientName)) {
                 client.setName(clientName);
             }
         }
-        
-        private void visibilityMessageReceived(String message) {
-            String moduleName = message.substring(message.indexOf("ServerModule=") + 7, message.indexOf(", commandText="));
-            String commandText = message.substring(message.indexOf(", commandText=") + 14, message.indexOf(", commandValue="));
-            String commandValueText = message.substring(message.indexOf(", commandValue=") + 16);
+    
+        private void visibilityMessageReceived(NetServerMessage message) {
+            String content = message.getMessageContent();
+            String moduleName = content.substring(content.indexOf("module=") + 7, content.indexOf(", commandText="));
+            String commandText = content.substring(content.indexOf(", commandText=") + 14, content.indexOf(", commandValue="));
+            String commandValueText = content.substring(content.indexOf(", commandValue=") + 16);
             int commandValue = NumberUtils.toInt(commandValueText, 0);
             ServerModule module = null;
             for (ServerModule m : rules.getModuleList()) {

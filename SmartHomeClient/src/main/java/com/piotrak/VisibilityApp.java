@@ -1,5 +1,6 @@
 package com.piotrak;
 
+import com.piotrak.connectivity.VisibilityCommand;
 import com.piotrak.elements.SwitchElement;
 import com.piotrak.modularity.Module;
 import com.piotrak.servers.IClientHandler;
@@ -51,7 +52,8 @@ public class VisibilityApp extends Application {
                     if (e instanceof SwitchElement) {
                         module = ((SwitchElement) e).getModule();
                     }
-                    clientHandler.sendMessage(new NetServerMessage(toggleButton.isSelected() ? "ON" : "OFF", module));
+                    clientHandler.sendMessage(new NetServerMessage(
+                            new VisibilityCommand(toggleButton.isSelected() ? "ON" : "OFF", 0, module).toString()));
                 });
             }
         });

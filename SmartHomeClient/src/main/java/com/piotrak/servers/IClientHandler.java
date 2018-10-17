@@ -29,14 +29,18 @@ public interface IClientHandler {
     }
     
     boolean runClient();
-
-//    void run();
     
     ServerType getServerType();
     
     List<ClientModule> getClientModuleList();
     
-    void sendMessage(ServerMessage message);
+    default void sendMessage(ServerMessage message) {
+        LOGGER.info("Sending out a " + message.getClass().getSimpleName() + ": " + message.getMessageContent() + " to the server");
+    }
     
     boolean isConfigReceived();
+    
+    void requestInitialConfig();
+    
+    void sendInitialConfig();
 }

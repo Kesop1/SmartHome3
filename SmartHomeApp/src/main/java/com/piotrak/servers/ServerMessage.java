@@ -33,10 +33,16 @@ public abstract class ServerMessage {
         if (getModule() != null) {
             sb.append(", Module: ").append(getModule().getName());
         }
+        sb.append(", ClientList: ");
+        sb.append(getClientsString());
+        return sb.toString();
+    }
+    
+    public String getClientsString() {
+        StrBuilder sb = new StrBuilder(0);
         if (!clientList.isEmpty()) {
-            sb.append(", ClientList: ");
             clientList.forEach((c -> sb.append(c).append(", ")));
         }
-        return sb.toString();
+        return sb.toString().substring(0, sb.lastIndexOf(", "));
     }
 }
