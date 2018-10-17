@@ -39,6 +39,7 @@ public class VisibilityApp extends Application {
     
     @Override
     public void start(Stage primaryStage) {
+        primaryStage.setOnCloseRequest(e -> System.exit(0));
         Screen mainScreen = VisibilityAppUtils.getScreenMap().get(MAIN_SCREEN);
         BorderPane borderPane = new BorderPane();
         VBox vbox = new VBox();
