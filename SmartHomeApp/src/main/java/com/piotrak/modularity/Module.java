@@ -34,4 +34,11 @@ public abstract class Module {
         return name;
     }
     
+    @Override
+    public String toString() {
+        return "Module{" +
+                "moduleType=" + moduleType.name() +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

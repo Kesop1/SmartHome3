@@ -43,4 +43,8 @@ public class ServerModule extends Module {
         }
     }
     
+    @Override
+    public String toString() {
+        return "Server" + super.toString();
+    }
 }

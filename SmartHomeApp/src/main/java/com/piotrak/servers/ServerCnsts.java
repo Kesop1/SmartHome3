@@ -9,6 +9,8 @@ public class ServerCnsts {
     public static final String CLIENT_CONFIG = "clt-cfg: ";
     public static final String CLIENT_CONFIG_END = "clt-cfg-end";
     public static final String CLIENT_CONFIG_READY = "clt-cfg-rdy";
+    public static final String CHECK_ALIVE = "chk-alive";
+    public static final String CLIENT_ALIVE = "clt-alive";
     public static final String VISIBILITY_CMD = "vis-cmd: ";
     
     private ServerCnsts() {

@@ -126,17 +126,6 @@ public class NetServerHandler implements IServerHandler {
         private void sendInitialConfig() {
             setUpClient(client);
         }
-        
-        public void redistributeMessage(NetServerMessage message) {
-            LOGGER.info("Sending out a " + message.getClass().getName() + ": " + message.getMessageContent() + " to " +
-                    (message.getClientList().isEmpty() ? " all clients" : message.getClientList().toString()));
-            for (NetServerListener listener : serverListenerList) {
-                if (message.getClientList().isEmpty() || message.getClientList().contains(listener.getClient().getName())) {
-                    LOGGER.debug("Sending message to: " + listener.getClient().getName());
-                    listener.sendMessage(message);
-                }
-            }
-        }
     
         public void sendModulesList() {
             StringBuilder sb = new StringBuilder(0);
@@ -154,6 +143,7 @@ public class NetServerHandler implements IServerHandler {
         @Override
         public void run() {
             NetServerMessage clientMessage;
+            long checkAliveStart = 0;
             try {
                 do {
                     clientMessage = getMessage();
@@ -166,10 +156,22 @@ public class NetServerHandler implements IServerHandler {
                             getClientConfig(clientMessage);
                         } else if (content.startsWith(VISIBILITY_CMD)) {
                             visibilityMessageReceived(clientMessage);
+                        } else if (content.startsWith(CLIENT_ALIVE)) {
+                            checkAliveStart = 0;
+                        }
+                    } else {
+                        if (checkAliveStart == 0) {
+                            out.println(CHECK_ALIVE);
+                            checkAliveStart = System.currentTimeMillis();
+                        } else {
+                            long checkAliveWait = System.currentTimeMillis();
+                            if (checkAliveWait - checkAliveStart > 5000) {
+                                throw new SocketException(client.getName() + " is disconnected");
+                            }
                         }
                     }
                 }
-                while (true);
+                while (client.getSocket().isConnected());
             } catch (SocketException e) {
                 closeListener();
             }
@@ -222,6 +224,7 @@ public class NetServerHandler implements IServerHandler {
         
         private void closeListener() {
             try {
+                LOGGER.info("Closing connection with " + client.getName());
                 client.getSocket().close();
                 in.close();
                 out.close();

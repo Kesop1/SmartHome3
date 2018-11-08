@@ -35,6 +35,7 @@ public class MQTTModuleConnection implements IModuleConnection {
     @Override
     public void connect() {
         try {
+            LOGGER.info("Trying to connect to MQTT");
             mqttClient = new MqttClient(uri, MqttClient.generateClientId(), new MemoryPersistence());
             setCallback();
             mqttClient.connect();

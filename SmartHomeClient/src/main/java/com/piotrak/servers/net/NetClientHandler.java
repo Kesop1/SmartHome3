@@ -125,6 +125,9 @@ public class NetClientHandler implements IClientHandler {
                         String content = message.getMessageContent();
                         if (content.startsWith(SERVER_CONFIG)) {
                             configReceived = true;
+                        } else if (content.startsWith(CHECK_ALIVE)) {
+                            NetServerMessage response = new NetServerMessage(CLIENT_ALIVE);
+                            sendMessage(response);
                         } else {
                             //different type of message from the server
                         }
