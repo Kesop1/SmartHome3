@@ -1,0 +1,213 @@
+#include <SPI.h>
+#include <Ethernet.h>
+#include <PubSubClient.h>
+#include <dht.h>
+#include <IRremote.h>
+
+// Update these with values suitable for your network.
+byte mac[]    = {  0xDE, 0xED, 0xCA, 0xFB, 0xFE, 0xBA };
+IPAddress ip(192, 168, 1, 104); //adres Arduino
+IPAddress server(192, 168, 1, 107);  //adres brokera
+
+#define DHT11_PIN A0
+dht DHT;
+
+const int IR_RECV_PIN = A2;
+IRrecv irrecv(IR_RECV_PIN);
+decode_results results;
+IRsend irsend;
+unsigned int TV_ON[] = {4500,4450, 550,1700, 550,1650, 550,1700, 600,550, 
+                        550,600, 550,550, 600,550, 550,600, 550,1700, 550,
+                        1700, 550,1650, 550,600, 550,600, 550,600, 550,600, 
+                        550,550, 600,550, 600,1650, 550,600, 550,600, 550,
+                        600, 550,550, 600,550, 550,600, 550,1700, 550,600, 
+                        550,1650, 550,1700, 550,1700, 550,1650, 600,1650, 
+                        550,1700, 550};
+
+const String TOPIC_ARDUINO = "arduino";
+const String SUBTOPIC_IN = "in";
+const String SUBTOPIC_OUT = "out";
+const String SUBTOPIC_WEATHER = "weather";
+const String SUBTOPIC_IR = "ir";
+const String TOPIC_ARDUINO_OUT = TOPIC_ARDUINO + "/" + SUBTOPIC_OUT + "/";
+const String TOPIC_ARDUINO_IN = TOPIC_ARDUINO + "/" + SUBTOPIC_IN + "/#";
+
+const String MSG_TEMP = "temp";
+const String MSG_HUM = "hum";
+
+void setInput() {
+  Serial.println("Setting up INPUT pins");
+}
+
+void setOutput() {
+  Serial.println("Setting up OUTPUT pins");
+  for (int i = 2; i <= 52; i++) {
+    pinMode(i, OUTPUT);
+    digitalWrite(i, HIGH);
+  }
+}
+
+void setIR() {
+  Serial.println("Setting up IR communication");
+  digitalWrite(9, LOW);
+  irrecv.enableIRIn();            // Start the receiver
+}
+
+void callback(char* topic, byte* payload, unsigned int length); //required by pubsubclient
+EthernetClient ethClient;
+PubSubClient client(server, 1883, callback, ethClient);
+
+void callback(char* topic, byte* payload, unsigned int length) {  //wiadomosc z brokera
+  String top = topic;
+  String msg = String((char*)payload);
+  msg = msg.substring(0, length);
+  Serial.println("Received message from the broker:\t=" + msg + "\tin topic: " + top);
+  if (!top.startsWith(TOPIC_ARDUINO)) {
+    return;
+  }
+  top.remove(0, TOPIC_ARDUINO.length() + 1);
+  if (top.startsWith(SUBTOPIC_IN)) {
+    top.remove(0, SUBTOPIC_IN.length() + 1);
+    if (top.indexOf(SUBTOPIC_WEATHER) >= 0) {
+      meteo(msg);
+    } else if (top.indexOf(SUBTOPIC_IR) >= 0) {
+      sendIR(strtoul(msg.c_str(), NULL, HEX));
+    } else {
+      int port = top.substring(0, top.indexOf("/")).toInt();
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  Ethernet.begin(mac, ip);
+
+  Serial.print("Connected to the gateway at IP address: ");
+  Serial.println(Ethernet.gatewayIP());
+
+  Serial.println("Attempting to connect to MQTT broker...");
+  while (!connectMQTT()) {
+    delay(5000);
+  }
+
+  subscribeMQTT();
+  setInput();
+  setOutput();
+  setIR();
+  Serial.println("Finished setup");
+}
+
+boolean connectMQTT() {
+  if (client.connect("arduinoClient")) {
+    Serial.println("Arduino MEGA successfully connected");
+    client.publish("outTopic", "MEGA connected");
+    return true;
+  } else {
+    Serial.println("Arduino MEGA connection failed");
+    Serial.println(client.state());
+    return false;
+  }
+}
+
+void subscribeMQTT() {
+  Serial.println("Subscribing to the topics");
+  client.subscribe(TOPIC_ARDUINO_IN.c_str());
+}
+
+void loop() {
+  client.loop();          //do mqtt
+  captureIR();
+}
+
+void captureIR() {
+  unsigned long ignoreCodes[] = {0x5EA158A7, 0x5EA1D827, 0xFFFFFFFF, 0x7E817E81, 0x7E81FE01, 0xE0E040BF};
+                                //VOLUP, VOLDN, EMPTY, AMP_ON, AMP_OFF, TV_ON
+  unsigned long code = 0;
+  String topic = SUBTOPIC_IR;
+  if (irrecv.decode(&results)) {
+    code = results.value;
+    irrecv.enableIRIn();
+    irrecv.resume(); // Receive the next value
+    for (int i = 0; i < sizeof(ignoreCodes) / sizeof(ignoreCodes[0]); i++) {
+      if (code == ignoreCodes[i]) {
+        return;
+      }
+    }
+    Serial.print("IR code captured. Protocol: ");
+    Serial.print(results.decode_type, DEC);
+    Serial.print("\t, value: ");
+    Serial.println(results.value, HEX);
+    sendOutMessage(topic, String(code, HEX));
+  }
+}
+
+void sendIR(unsigned long code) {
+  if(code == 0xE0E040BF) {
+    irsend.sendRaw(TV_ON, 67, 38);
+    delay(100);
+  }else{
+    irsend.sendNEC(code, 32);
+    delay(40);
+  }
+  irsend.sendNEC(0xFFFFFFFF, 32);
+  delay(40);
+  irrecv.enableIRIn();
+  irrecv.resume();
+}
+
+void meteo(String msg) {
+  int chk = DHT.read11(DHT11_PIN);
+  String dhtRead = "";
+  String topic = SUBTOPIC_WEATHER + "/";
+  if (msg == MSG_TEMP) {
+    dhtRead = String(DHT.temperature, 1).c_str();
+    topic += MSG_TEMP;
+  } else if (msg == MSG_HUM) {
+    dhtRead = String(DHT.humidity, 1).c_str();
+    topic += MSG_HUM;
+  } else {
+    return;
+  }
+  if (chk == DHTLIB_OK) {
+    Serial.println("DHT read: " + dhtRead);
+  } else {
+    Serial.println("DHT read error: " + chk);
+    dhtRead = "N/A";
+  }
+  sendOutMessage(topic, dhtRead);
+}
+
+
+void sendOutMessage(String topic, String msg) {
+  topic = TOPIC_ARDUINO_OUT + topic;
+  Serial.println("Sending MQTT message: topic= " + topic + ", message= " + msg);
+  client.publish(topic.c_str(), msg.c_str());
+}
+
+//--------------------  INFO ----------------------------------//
+/*
+   Sciagnac pubsubclient wersja co najmniej 2.4
+   odpalic pubsubclient.h
+   i zmienic wersje MQTT na 3_1
+*/
+
+/*
+  DHT11:
+  VCC DATA  X GND
+  czujnik temp i wilgoci  DHT11_PN
+*/
+
+/*
+  IR Receiver:
+  DATA GND VCC
+  nadajniki IR pilotów,   pin 9
+  czujnik IR pilota       IR_RECV_PIN
+*/
+
+/*
+  Ustawienia dla pilota
+  Pilot Yamaha ustawiony na CD
+  Wcisnac i trzymac przycisk CD i przez 3 sekundy trzymac razem z POWER AV, potem kod 2078
+  kod dla TV: 0069
+  sciagnac irremote z https://github.com/z3t0/Arduino-IRremote
+*/
