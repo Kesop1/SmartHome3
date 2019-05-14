@@ -28,7 +28,7 @@ public interface IClientHandler {
         return clientHandler;
     }
     
-    boolean runClient();
+    Thread runClient();
     
     ServerType getServerType();
     
@@ -43,4 +43,6 @@ public interface IClientHandler {
     void requestInitialConfig();
     
     void sendInitialConfig();
+    
+    boolean isConnected();
 }

@@ -36,6 +36,10 @@ public class NetClientHandler implements IClientHandler {
     
     private List<ClientModule> serverModuleList = new ArrayList<>(0);
     
+    private long checkAliveStart = 0;
+    
+    private boolean connected = false;
+    
     public NetClientHandler(String host, int port, String name) {
         this.host = host;
         this.port = port;
@@ -43,7 +47,7 @@ public class NetClientHandler implements IClientHandler {
     }
     
     @Override
-    public boolean runClient() {
+    public Thread runClient() {
         do {
             connectToServer();
         }
@@ -51,7 +55,7 @@ public class NetClientHandler implements IClientHandler {
         listener = new NetClientListener(client.getSocket());
         Thread thread = new Thread(listener);
         thread.start();
-        return true;
+        return thread;
     }
     
     @Override
@@ -74,6 +78,7 @@ public class NetClientHandler implements IClientHandler {
         try {
             Socket socket = new Socket(host, port);
             client.setSocket(socket);
+            connected = true;
             LOGGER.info("Successfully connected to the server");
         } catch (IOException e) {
             LOGGER.error("Unable to connect to the server: " + host + ":" + port);
@@ -94,6 +99,11 @@ public class NetClientHandler implements IClientHandler {
     @Override
     public void sendInitialConfig() {
         sendMessage(new NetServerMessage(CLIENT_CONFIG + "Name=" + client.getName() + " " + CLIENT_CONFIG_END));
+    }
+    
+    @Override
+    public boolean isConnected() {
+        return connected;
     }
     
     private class NetClientListener implements Runnable {
@@ -142,6 +152,7 @@ public class NetClientHandler implements IClientHandler {
                         client.getSocket().close();
                         in.close();
                         out.close();
+                        connected = false;
                     }
                 } catch (IOException e) {
                     LOGGER.warn("Error occurred while closing the socket", e);
@@ -167,10 +178,21 @@ public class NetClientHandler implements IClientHandler {
             }
             if (!StringUtils.isEmpty(message)) {
                 netServerMessage = new NetServerMessage(message);
+                checkAliveStart = 0;
+            } else {
+                if (checkAliveStart == 0) {
+                    NetServerMessage checkAliveMsg = new NetServerMessage(CHECK_ALIVE);
+                    sendMessage(checkAliveMsg);
+                    checkAliveStart = System.currentTimeMillis();
+                } else {
+                    long checkAliveWait = System.currentTimeMillis();
+                    if (checkAliveWait - checkAliveStart > 5000) {
+                        throw new SocketException("Lost connection with the server");
+                    }
+                }
             }
             return netServerMessage;
         }
         
     }
-    
 }

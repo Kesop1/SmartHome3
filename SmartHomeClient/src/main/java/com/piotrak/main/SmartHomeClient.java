@@ -18,17 +18,24 @@ public class SmartHomeClient {
     
     private IClientHandler clientHandler;
     
+    private Thread thread;
+    
     public SmartHomeClient(XMLConfiguration configFile) {
         config(configFile);
-        clientHandler.runClient();
+    }
+    
+    public void run() {
+        thread = clientHandler.runClient();
         do {
             //wait for config from the server
         } while (!clientHandler.isConfigReceived());
         moduleList = clientHandler.getClientModuleList();
-    }
-    
-    public void run() {
         VisibilityApp.runVisibilityApp(null);
+        do {
+            //work while connected to the server
+        } while ((clientHandler.isConnected()));
+        thread = null; //TODO: nie chce tu wejsc
+        reconnect();
     }
     
     private void config(XMLConfiguration configFile) {
@@ -43,4 +50,14 @@ public class SmartHomeClient {
         }
     }
     
+    private void reconnect() {
+        do {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                LOGGER.info("Error occurred when sleeping", e);
+            }
+            thread = clientHandler.runClient();
+        } while (thread == null);
+    }
 }
